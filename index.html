@@ -28,23 +28,20 @@
         
         .mini-car-container { position: relative; width: 68px; height: 48px; }
         
-        /* パンタグラフ: 指定通り サイズ10px、左に24px、2px下げた位置を維持 */
         .mini-panta { 
             position: absolute; 
-            left: 24px; 
+            left: 0px; 
             top: 14px; 
             width: 10px; 
             z-index: 5; 
         }
         
-        /* 車体: 2px上げを維持 */
         .mini-car-body { 
             width: 100%; height: 28px; position: absolute; bottom: 2px; z-index: 10;
             -webkit-mask-size: contain; -webkit-mask-repeat: no-repeat; -webkit-mask-position: bottom;
             mask-size: contain; mask-repeat: no-repeat; mask-position: bottom;
         }
 
-        /* 車体内のテキスト位置も微調整済み */
         .mini-info-in-body { 
             position: absolute; bottom: 6px; width: 100%; text-align: center; z-index: 20;
             color: white; font-weight: bold; pointer-events: none;
