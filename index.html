@@ -19,20 +19,18 @@
 
         .formation-list-bg { background: #888; padding: 15px 10px; display: none; }
         .formation-list-bg.show { display: block; }
-        .direction-label { color: #ccc; font-size: 11px; margin-bottom: 20px; display: flex; justify-content: space-between; font-weight: bold; }
+        .direction-label { color: #ccc; font-size: 11px; margin-bottom: 25px; display: flex; justify-content: space-between; font-weight: bold; }
 
         /* --- 編成表（トップ画面） --- */
-        .formation-row { display: flex; align-items: center; gap: 8px; margin-bottom: 25px; cursor: pointer; }
+        .formation-row { display: flex; align-items: center; gap: 8px; margin-bottom: 30px; cursor: pointer; }
         .f-name-tag { background: white; color: #333; padding: 2px 8px; border-radius: 10px; font-weight: bold; min-width: 35px; text-align: center; font-size: 13px; }
         .car-mini-list { display: flex; gap: 4px; align-items: flex-end; }
         
-        .mini-car-container { position: relative; width: 60px; height: 35px; }
-        /* 車体色を画像に合わせて塗る（塗りつぶし） */
-        .car-color-layer { position: absolute; bottom: 0; width: 100%; height: 22px; z-index: 11; -webkit-mask-size: contain; -webkit-mask-repeat: no-repeat; -webkit-mask-position: bottom; }
+        .mini-car-container { position: relative; width: 64px; height: 38px; }
         .mini-main-car { width: 100%; position: absolute; bottom: 0; z-index: 10; }
-        /* トップのパンタ位置：高すぎたので下げ(-6px) */
-        .mini-panta { position: absolute; top: 0px; width: 16px; left: 50%; transform: translateX(-50%); z-index: 5; }
-        .mini-ryaku-no { position: absolute; bottom: -16px; width: 100%; text-align: center; color: white; font-size: 9px; white-space: nowrap; font-weight: bold; }
+        /* パンタ位置：横軸中央、縦軸を適切に下げ */
+        .mini-panta { position: absolute; top: 4px; width: 18px; left: 50%; transform: translateX(-50%); z-index: 5; }
+        .mini-ryaku-no { position: absolute; bottom: -18px; width: 100%; text-align: center; color: white; font-size: 10px; white-space: nowrap; font-weight: bold; }
 
         /* --- 個別ページ --- */
         .section-title { font-size: 16px; font-weight: bold; margin-bottom: 12px; color: #333; }
@@ -40,36 +38,51 @@
         .info-row { display: flex; margin-bottom: 5px; }
         .info-label { width: 100px; color: #888; flex-shrink: 0; }
         
-        /* 編成スタンプ：デカすぎたので戻した(24px) */
-        .stamp-icon-large { height: 24px; margin-right: 8px; vertical-align: middle; }
+        /* スタンプサイズ変更：36px */
+        .stamp-icon-large { height: 36px; margin-right: 10px; vertical-align: middle; }
 
         .car-detail-list { padding: 0 20px; }
-        .car-unit { display: flex; flex-direction: column; margin-bottom: 45px; }
-        .car-visual-row { display: flex; align-items: center; gap: 35px; }
+        .car-unit { display: flex; flex-direction: column; margin-bottom: 50px; }
+        .car-visual-row { display: flex; align-items: center; gap: 20px; }
         
-        .car-img-container { position: relative; width: 180px; height: 85px; flex-shrink: 0; }
+        /* 車両画像：さらに大きく(200px) */
+        .car-img-container { position: relative; width: 200px; height: 90px; flex-shrink: 0; }
         .main-car { width: 100%; position: absolute; bottom: 15px; z-index: 10; }
         
-        /* パンタ位置：詳細ページは低すぎたので上げ(-15px) */
-        .panta-detail { position: absolute; top: -15px; width: 24px; z-index: 5; } 
-        .panta-left { left: 22px; }
-        .panta-right { right: 22px; }
+        /* 着色レイヤー：マスクを使用して車体のみ塗る */
+        .car-color-layer { 
+            position: absolute; width: 100%; height: 100%; z-index: 11; 
+            -webkit-mask-size: contain; -webkit-mask-repeat: no-repeat; -webkit-mask-position: center;
+            mask-size: contain; mask-repeat: no-repeat; mask-position: center;
+        }
+
+        /* パンタ位置：詳細ページはしっかり上げる */
+        .panta-detail { position: absolute; top: -14px; width: 28px; z-index: 5; } 
+        .panta-left { left: 24px; }
+        .panta-right { right: 24px; }
         
-        .car-no-inline { position: absolute; top: 52%; left: 50%; transform: translate(-50%, -50%); z-index: 20; color: white; font-size: 15px; font-weight: bold; text-shadow: 1px 1px 2px rgba(0,0,0,0.9); pointer-events: none; }
+        /* 車番：改行禁止、さらに大きく */
+        .car-no-inline { 
+            position: absolute; top: 52%; left: 50%; transform: translate(-50%, -50%); 
+            z-index: 20; color: white; font-size: 16px; font-weight: bold; 
+            text-shadow: 1px 1px 3px rgba(0,0,0,1); pointer-events: none; 
+            white-space: nowrap; 
+        }
         
-        .bogie { position: absolute; bottom: 4px; width: 50px; z-index: 5; }
-        .bogie-left { left: 24px; }
-        .bogie-right { right: 24px; }
+        .bogie { position: absolute; bottom: 4px; width: 55px; z-index: 5; }
+        .bogie-left { left: 28px; }
+        .bogie-right { right: 28px; }
         
-        .car-meta { font-size: 12px; color: #666; }
+        .car-meta { font-size: 12px; color: #666; white-space: nowrap; }
         .car-data-row { display: flex; align-items: center; gap: 15px; margin-top: 10px; font-size: 13px; }
-        .stamp-small { height: 26px; }
+        /* 車両情報スタンプも36px */
+        .stamp-small { height: 36px; }
 
         .history-section { border-top: 1px solid #ddd; margin-top: 20px; padding: 20px; }
         .history-item { margin-bottom: 18px; }
         .history-top-row { display: flex; align-items: center; gap: 10px; margin-bottom: 5px; }
         .history-date { background: white; padding: 2px 8px; border-radius: 4px; font-size: 12px; border: 1px solid #ccc; font-weight: bold; }
-        .history-stamp { height: 22px; }
+        .history-stamp { height: 26px; }
 
         .hidden { display: none !important; }
     </style>
@@ -141,6 +154,15 @@ function toggleSection(id, el) {
     arrow.innerHTML = list.classList.contains('show') ? '▲' : '▼';
 }
 
+function getRyaku(vNo) {
+    // 優先順位を整理：クモハを一番最初に判定
+    if (vNo.includes('クモハ')) return "Mc";
+    if (vNo.includes('クハ')) return "Tc'";
+    if (vNo.includes('モハ')) return "M'";
+    if (vNo.includes('サハ')) return "T";
+    return "";
+}
+
 function renderTop() {
     const e131Container = document.getElementById('rows-e131');
     const fNames = [...new Set(allData.map(r => r.編成名))];
@@ -153,29 +175,21 @@ function renderTop() {
         
         let html = `<div class="f-name-tag">${name}</div><div class="car-mini-list">`;
         cars.forEach(c => {
-            const no = c.車両番号.split('-').pop();
+            const noPart = c.車両番号.split('-').pop();
             const pKey = c.左パンタ || c.右パンタ;
-            const ryaku = getRyaku(c.車両番号); // ここでMc等を取得
+            const ryaku = getRyaku(c.車両番号);
             html += `
             <div class="mini-car-container">
                 ${pKey ? `<img src="body/${PANTA_MAP[pKey] || 'p1'}.png" class="mini-panta">` : ''}
-                <div class="car-color-layer" style="background-color:${c.車体色 || 'transparent'}; -webkit-mask-image: url('body/${c.車体アイコン}.png');"></div>
+                <div class="car-color-layer" style="background-color:${c.車体色 || 'transparent'}; -webkit-mask-image: url('body/${c.車体アイコン}.png'); bottom:0; height:24px;"></div>
                 <img src="body/${c.車体アイコン}.png" class="mini-main-car">
-                <div class="mini-ryaku-no">${ryaku}${no}</div>
+                <div class="mini-ryaku-no">${ryaku}${noPart}</div>
             </div>`;
         });
         html += `</div>`;
         row.innerHTML = html;
         e131Container.appendChild(row);
     });
-}
-
-function getRyaku(no) {
-    if (no.includes('クハ')) return "Tc'";
-    if (no.includes('モハ')) return "M'";
-    if (no.includes('サハ')) return "T";
-    if (no.includes('クモハ')) return "Mc"; // 確実にMcを返すように固定
-    return "";
 }
 
 function renderDetail(name) {
@@ -204,7 +218,7 @@ function renderDetail(name) {
                     <div class="car-img-container">
                         ${c.左パンタ ? `<img src="body/${PANTA_MAP[c.左パンタ] || 'p1'}.png" class="panta-detail panta-left">` : ''}
                         ${c.右パンタ ? `<img src="body/${PANTA_MAP[c.右パンタ] || 'p1'}.png" class="panta-detail panta-right">` : ''}
-                        <div class="car-color-layer" style="height:48px; bottom:15px; background-color:${c.車体色 || 'transparent'}; -webkit-mask-image: url('body/${c.車体アイコン}.png');"></div>
+                        <div class="car-color-layer" style="background-color:${c.車体色 || 'transparent'}; -webkit-mask-image: url('body/${c.車体アイコン}.png'); bottom:15px; height:52px;"></div>
                         <img src="body/${c.車体アイコン}.png" class="main-car">
                         <div class="car-no-inline">${c.車両番号}</div>
                         ${c.左台車 ? `<img src="body/${c.左台車}.png" class="bogie bogie-left">` : ''}
