@@ -26,15 +26,14 @@
         .f-name-tag { background: white; color: #333; padding: 2px 8px; border-radius: 10px; font-weight: bold; min-width: 35px; text-align: center; font-size: 13px; }
         .car-mini-list { display: flex; gap: 4px; align-items: flex-end; }
         
-        /* パンタグラフの位置を厳守するための親要素固定 */
         .mini-car-container { position: relative; width: 68px; height: 48px; }
         
-        /* 編成表パンタグラフ: 左24px, 上12px、サイズ微調整 */
+        /* 編成表パンタグラフ: 指定通り左に16px、サイズをさらに縮小(12px) */
         .mini-panta { 
             position: absolute; 
-            left: 24px; 
+            left: 16px; 
             top: 12px; 
-            width: 15px; 
+            width: 12px; 
             z-index: 5; 
         }
         
@@ -44,7 +43,6 @@
             mask-size: contain; mask-repeat: no-repeat; mask-position: bottom;
         }
 
-        /* 車体の中のテキスト（Mc805形式） */
         .mini-info-in-body { 
             position: absolute; bottom: 4px; width: 100%; text-align: center; z-index: 20;
             color: white; font-weight: bold; pointer-events: none;
@@ -66,14 +64,12 @@
         
         .car-img-container { position: relative; width: 250px; height: 110px; flex-shrink: 0; }
         
-        /* 車体情報を4px上げる (bottomを15px→19pxへ) */
         .detail-car-body { 
             width: 100%; height: 75px; position: absolute; bottom: 19px; z-index: 10;
             -webkit-mask-size: contain; -webkit-mask-repeat: no-repeat; -webkit-mask-position: center;
             mask-size: contain; mask-repeat: no-repeat; mask-position: center;
         }
 
-        /* 詳細画面の車番も4px上げる */
         .car-no-inline { 
             position: absolute; top: calc(52% - 4px); left: 50%; transform: translate(-50%, -50%); 
             z-index: 20; color: white; font-size: 20px; font-weight: bold; 
@@ -230,7 +226,7 @@ function renderDetail(name) {
             <div class="car-unit">
                 <div class="car-visual-row">
                     <div class="car-img-container">
-                        ${c.左パンタ ? `<img src="body/${PANTA_MAP[c.leftパンタ] || PANTA_MAP[c.左パンタ] || 'p1'}.png" class="panta-detail panta-left">` : ''}
+                        ${c.左パンタ ? `<img src="body/${PANTA_MAP[c.左パンタ] || 'p1'}.png" class="panta-detail panta-left">` : ''}
                         ${c.右パンタ ? `<img src="body/${PANTA_MAP[c.右パンタ] || 'p1'}.png" class="panta-detail panta-right">` : ''}
                         <div class="detail-car-body" style="background-color:${c.車体色 || '#999'}; -webkit-mask-image: url('body/${c.車体アイコン}.png');"></div>
                         <div class="car-no-inline">${c.車両番号}</div>
