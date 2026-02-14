@@ -28,6 +28,7 @@
         
         .mini-car-container { position: relative; width: 68px; height: 48px; }
         
+        /* パンタグラフ: 左に8pxに変更 */
         .mini-panta { 
             position: absolute; 
             left: 8px; 
@@ -35,7 +36,8 @@
             width: 10px; 
             z-index: 5; 
         }
-    
+        
+        /* 車体: 2px上げ */
         .mini-car-body { 
             width: 100%; height: 28px; position: absolute; bottom: 2px; z-index: 10;
             -webkit-mask-size: contain; -webkit-mask-repeat: no-repeat; -webkit-mask-position: bottom;
@@ -49,7 +51,7 @@
             white-space: nowrap;
         }
 
-        /* --- 個別ページ（車両情報の完成状態を維持） --- */
+        /* --- 個別ページ --- */
         .section-title { font-size: 16px; font-weight: bold; margin-bottom: 12px; color: #333; }
         .detail-info-box { padding: 20px; color: #444; line-height: 1.6; font-size: 14px; }
         .info-row { display: flex; margin-bottom: 5px; }
@@ -230,7 +232,7 @@ function renderDetail(name) {
                         <div class="detail-car-body" style="background-color:${c.車体色 || '#999'}; -webkit-mask-image: url('body/${c.車体アイコン}.png');"></div>
                         <div class="car-no-inline">${c.車両番号}</div>
                         ${c.左台車 ? `<img src="body/${c.左台車}.png" class="bogie bogie-left">` : ''}
-                        ${c.right台車 ? `<img src="body/${c.右台車}.png" class="bogie bogie-right">` : ''}
+                        ${c.右台車 ? `<img src="body/${c.右台車}.png" class="bogie bogie-right">` : ''}
                     </div>
                     <div class="car-meta">
                         <div>${c.製造所}</div>
