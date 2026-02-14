@@ -3,51 +3,96 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>形成-DB 鉄道編成表</title>
+    <title>形成-DB 編成表</title>
     <style>
-        :root { --car-width: 200px; --bg-color: #f8f9fa; }
-        body { font-family: "Helvetica Neue", Arial, sans-serif; background: var(--bg-color); margin: 0; padding: 20px; }
+        :root { --main-gray: #7a7a7a; --bg-gray: #f0f0f0; }
+        body { font-family: "Helvetica Neue", Arial, "Hiragino Kaku Gothic ProN", sans-serif; background: var(--bg-gray); margin: 0; color: #333; }
         
-        /* トップ画面のスタイル */
-        .top-menu { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 20px; padding: 20px; }
-        .menu-card { background: white; padding: 20px; border-radius: 15px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); cursor: pointer; text-align: center; transition: transform 0.2s; }
-        .menu-card:hover { transform: translateY(-5px); }
-        .menu-card h3 { margin: 10px 0 5px; color: #333; }
-        
-        /* 編成表示のスタイル */
-        .formation-container { display: none; background: white; border-radius: 20px; padding: 40px 20px; position: relative; overflow-x: auto; box-shadow: 0 10px 30px rgba(0,0,0,0.15); }
-        .back-btn { display: inline-block; margin-bottom: 20px; padding: 10px 20px; background: #333; color: white; border-radius: 8px; text-decoration: none; cursor: pointer; }
+        /* ヘッダー */
+        .header { background: var(--main-gray); color: white; padding: 15px; display: flex; align-items: center; gap: 10px; font-size: 1.2rem; position: sticky; top: 0; z-index: 100; }
+        .header img { height: 24px; filter: brightness(0) invert(1); }
 
-        .car-list { display: flex; align-items: flex-end; gap: 0; min-width: max-content; padding-top: 50px; }
-        
-        /* 画像の位置調整（ここが重要！） */
-        .car-container { position: relative; width: var(--car-width); flex-shrink: 0; margin-right: 100px; }
-        .car-main-img { width: 100%; display: block; position: relative; z-index: 10; }
-        
-        /* パンタグラフの位置 */
-        .panta { position: absolute; top: -25px; width: 50px; z-index: 15; }
-        .panta-left { left: 20px; }
-        .panta-right { right: 20px; }
-        
-        /* 台車の位置（車体の下に潜り込ませる） */
-        .bogie { position: absolute; bottom: -12px; width: 60px; z-index: 5; }
-        .bogie-left { left: 25px; }
-        .bogie-right { right: 25px; }
+        /* トップ画面：系統別メニュー */
+        #top-view { padding: 0; }
+        .system-section { background: #666; color: white; padding: 10px 15px; display: flex; align-items: center; justify-content: space-between; margin-top: 1px; }
+        .system-title { display: flex; align-items: center; gap: 10px; font-weight: bold; }
+        .system-icon { width: 40px; height: 40px; background: white; border-radius: 5px; }
 
-        .car-id { text-align: center; margin-top: 15px; font-weight: bold; font-size: 18px; border-top: 3px solid #333; padding-top: 5px; }
-        .side-info { position: absolute; left: 105%; top: 0; width: 180px; font-size: 12px; line-height: 1.4; color: #555; }
+        .formation-list-bg { background: #888; padding: 15px 10px; }
+        .direction-label { color: #ccc; font-size: 12px; margin-bottom: 10px; display: flex; justify-content: space-between; }
+
+        /* 編成行（トップ用） */
+        .formation-row { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; cursor: pointer; }
+        .f-name-tag { background: white; color: #333; padding: 2px 10px; border-radius: 12px; font-weight: bold; min-width: 40px; text-align: center; font-size: 14px; }
+        .car-mini-list { display: flex; gap: 5px; }
+        .car-mini-box { background: #aaa; color: white; padding: 2px 8px; font-size: 10px; border-radius: 2px; position: relative; }
+        .car-mini-box::before { content: '＜'; position: absolute; top: -10px; left: 50%; transform: translateX(-50%); font-size: 8px; opacity: 0.5; }
+
+        /* 個別ページ：編成情報 */
+        #detail-view { padding-bottom: 50px; }
+        .detail-info-box { padding: 20px; color: #555; line-height: 1.8; }
+        .info-label { display: inline-block; width: 100px; color: #888; }
+        .history-section { border-top: 1px solid #ccc; padding: 20px; }
+        .history-item { display: flex; gap: 15px; margin-bottom: 15px; }
+        .history-date { background: white; padding: 2px 8px; border-radius: 5px; font-size: 14px; height: fit-content; border: 1px solid #ddd; }
+        .history-text { font-size: 14px; }
+
+        /* 車両画像表示（詳細ページ） */
+        .car-detail-list { padding: 20px; border-top: 1px solid #ccc; }
+        .car-unit { position: relative; margin-bottom: 40px; display: flex; align-items: flex-end; }
+        .car-img-container { position: relative; width: 160px; }
+        .main-car { width: 100%; position: relative; z-index: 10; }
+        .panta { position: absolute; top: -12px; width: 35px; z-index: 5; }
+        .panta-left { left: 15px; }
+        .bogie { position: absolute; bottom: -8px; width: 45px; z-index: 5; }
+        .bogie-left { left: 20px; }
+        .bogie-right { right: 20px; }
+        
+        .car-meta { margin-left: 20px; font-size: 12px; color: #666; border-left: 1px solid #ccc; padding-left: 15px; }
+        .car-no-text { font-size: 16px; color: #333; font-weight: bold; margin-bottom: 5px; }
+
+        .hidden { display: none !important; }
     </style>
 </head>
 <body>
 
 <div id="top-view">
-    <h1>形成-DB 編成図鑑</h1>
-    <div id="menu-list" class="top-menu"></div>
+    <div class="header"><img src="images/f0.png" onerror="this.style.display='none'"> 仙石線系統</div>
+    
+    <div class="system-section">
+        <div class="system-title"><img src="images/b1.png" class="system-icon" style="object-fit:contain;"> 205系</div>
+        <div>▼</div>
+    </div>
+
+    <div class="system-section">
+        <div class="system-title"><img src="images/b1.png" class="system-icon" style="object-fit:contain;"> E131系</div>
+        <div>▲</div>
+    </div>
+
+    <div class="formation-list-bg">
+        <div class="direction-label"><span>◀︎あおば通・仙台</span><span>石巻▶︎</span></div>
+        <div id="formation-rows-container"></div>
+    </div>
 </div>
 
-<div id="detail-view" style="display:none;">
-    <div class="back-btn" onclick="showTop()">← 戻る</div>
-    <div id="formation-content" class="formation-container"></div>
+<div id="detail-view" class="hidden">
+    <div class="header" onclick="showTop()" style="cursor:pointer;">
+        <img src="images/f0.png" onerror="this.style.display='none'"> <span id="detail-title-name">N5編成</span>
+    </div>
+    
+    <div class="detail-info-box">
+        <div style="font-size: 18px; font-weight: bold; margin-bottom: 15px;">編成情報</div>
+        <div><span class="info-label">車両形式</span> <span id="info-type">E131系800番台</span></div>
+        <div><span class="info-label">所属基地</span> <span id="info-base">宮城野派出所</span></div>
+        <div id="info-stamps" style="margin-top:10px;"></div>
+    </div>
+
+    <div class="history-section">
+        <div style="font-weight: bold; margin-bottom: 15px; color: #888;">車歴</div>
+        <div id="history-list"></div>
+    </div>
+
+    <div class="car-detail-list" id="car-details"></div>
 </div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
@@ -59,60 +104,92 @@ Papa.parse('data.csv', {
     download: true, header: true,
     complete: function(results) {
         allData = results.data.filter(r => r.編成名);
-        showTop();
+        renderTop();
     }
 });
 
-function showTop() {
-    document.getElementById('top-view').style.display = 'block';
-    document.getElementById('detail-view').style.display = 'none';
+function renderTop() {
+    document.getElementById('top-view').classList.remove('hidden');
+    document.getElementById('detail-view').classList.add('hidden');
     
-    const menuList = document.getElementById('menu-list');
-    menuList.innerHTML = '';
+    const container = document.getElementById('formation-rows-container');
+    container.innerHTML = '';
     
-    const groups = [...new Set(allData.map(r => r.編成名))];
-    groups.forEach(name => {
-        const firstCar = allData.find(r => r.編成名 === name);
-        const card = document.createElement('div');
-        card.className = 'menu-card';
-        card.innerHTML = `<h3>${name}</h3><p>${firstCar.形式}</p>`;
-        card.onclick = () => showDetail(name);
-        menuList.appendChild(card);
+    const fNames = [...new Set(allData.map(r => r.編成名))];
+    fNames.forEach(name => {
+        const cars = allData.filter(r => r.編成名 === name).sort((a,b) => a.号車 - b.号車);
+        const row = document.createElement('div');
+        row.className = 'formation-row';
+        row.onclick = () => renderDetail(name);
+        
+        let carsHtml = `<div class="f-name-tag">${name}</div><div class="car-mini-list">`;
+        cars.forEach(c => {
+            const ryaku = c.車両番号.split('-').pop();
+            const hasPanta = c.左パンタ || c.右パンタ;
+            carsHtml += `<div class="car-mini-box" style="${hasPanta ? '' : 'padding-top:2px;'}">${getRyakuType(c.車両番号)}${ryaku}</div>`;
+        });
+        carsHtml += `</div>`;
+        
+        row.innerHTML = carsHtml;
+        container.appendChild(row);
     });
 }
 
-function showDetail(name) {
-    document.getElementById('top-view').style.display = 'none';
-    document.getElementById('detail-view').style.display = 'block';
-    const container = document.getElementById('formation-content');
-    container.style.display = 'block';
-    container.innerHTML = '';
+function getRyakuType(no) {
+    if (no.includes('クハ')) return "Tc'";
+    if (no.includes('モハ')) return "M'";
+    if (no.includes('サハ')) return "T";
+    if (no.includes('クモハ')) return "Mc";
+    return "";
+}
 
+function renderDetail(name) {
+    document.getElementById('top-view').classList.add('hidden');
+    document.getElementById('detail-view').classList.remove('hidden');
+    
     const cars = allData.filter(r => r.編成名 === name).sort((a,b) => a.号車 - b.号車);
-    let html = `<div class="car-list">`;
+    const top = cars[0];
 
-    cars.forEach(row => {
-        html += `
-        <div class="car-container">
-            ${row.左パンタ ? `<img src="images/${PANTA_MAP[row.左パンタ] || row.左パンタ}.png" class="panta panta-left">` : ''}
-            ${row.右パンタ ? `<img src="images/${PANTA_MAP[row.右パンタ] || row.右パンタ}.png" class="panta panta-right">` : ''}
-            
-            <img src="images/${row.車体アイコン}.png" class="car-main-img">
-            
-            ${row.左台車 ? `<img src="images/${row.左台車}.png" class="bogie bogie-left">` : ''}
-            ${row.rightBogie || row.右台車 ? `<img src="images/${row.右台車}.png" class="bogie bogie-right">` : ''}
-            
-            <div class="car-id">${row.車両番号}</div>
-            <div class="side-info">
-                <div><b>${row["車両情報(記述)"] || ''}</b></div>
-                <div>${row.製造所 || ''}</div>
-                <div>${row.落成日 || ''} 落成</div>
-            </div>
-        </div>`;
+    document.getElementById('detail-title-name').innerText = name + "編成";
+    document.getElementById('info-type').innerText = top.形式 || "未設定";
+    document.getElementById('info-base').innerText = top["編成情報(記述)"] || "未設定";
+
+    // 車歴
+    const historyList = document.getElementById('history-list');
+    historyList.innerHTML = '';
+    [1, 2].forEach(i => {
+        if (top[`車歴${i}(日付)`]) {
+            historyList.innerHTML += `
+                <div class="history-item">
+                    <div class="history-date">${top[`車歴${i}(選択)`] || '記録'} ${top[`車歴${i}(日付)`]}</div>
+                    <div class="history-text">${top[`車歴${i}(記述)`] || ''}</div>
+                </div>`;
+        }
     });
 
-    html += `</div>`;
-    container.innerHTML = html;
+    // 車両詳細
+    const carDetails = document.getElementById('car-details');
+    carDetails.innerHTML = '<div style="font-weight: bold; margin-bottom: 20px; color: #888;">車両情報</div>';
+    cars.forEach(c => {
+        carDetails.innerHTML += `
+            <div class="car-unit">
+                <div class="car-img-container">
+                    ${c.左パンタ ? `<img src="images/${PANTA_MAP[c.左パンタ] || 'p1'}.png" class="panta panta-left">` : ''}
+                    <img src="images/${c.車体アイコン}.png" class="main-car">
+                    <img src="images/t.png" class="bogie bogie-left">
+                    <img src="images/t.png" class="bogie bogie-right">
+                </div>
+                <div class="car-meta">
+                    <div class="car-no-text">${c.車両番号}</div>
+                    <div>${c.製造所 || ''}</div>
+                    <div>${c.落成日 || ''} 落成</div>
+                </div>
+            </div>`;
+    });
+}
+
+function showTop() {
+    renderTop();
 }
 </script>
 </body>
