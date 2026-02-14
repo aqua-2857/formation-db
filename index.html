@@ -26,24 +26,31 @@
         .f-name-tag { background: white; color: #333; padding: 2px 8px; border-radius: 10px; font-weight: bold; min-width: 35px; text-align: center; font-size: 13px; }
         .car-mini-list { display: flex; gap: 4px; align-items: flex-end; }
         
-        .mini-car-container { position: relative; width: 68px; height: 45px; }
-        /* パンタ位置：左から24px, 上から12px、サイズ調整 */
-        .mini-panta { position: absolute; left: 24px; top: 12px; width: 14px; z-index: 5; }
+        /* パンタグラフの位置を厳守するための親要素固定 */
+        .mini-car-container { position: relative; width: 68px; height: 48px; }
         
-        /* マスク処理車体（編成表用） */
+        /* 編成表パンタグラフ: 左24px, 上12px、サイズ微調整 */
+        .mini-panta { 
+            position: absolute; 
+            left: 24px; 
+            top: 12px; 
+            width: 15px; 
+            z-index: 5; 
+        }
+        
         .mini-car-body { 
             width: 100%; height: 28px; position: absolute; bottom: 0; z-index: 10;
             -webkit-mask-size: contain; -webkit-mask-repeat: no-repeat; -webkit-mask-position: bottom;
             mask-size: contain; mask-repeat: no-repeat; mask-position: bottom;
         }
-        /* 車体の中のテキスト（車番・略号） */
+
+        /* 車体の中のテキスト（Mc805形式） */
         .mini-info-in-body { 
             position: absolute; bottom: 4px; width: 100%; text-align: center; z-index: 20;
-            color: white; font-weight: bold; pointer-events: none; line-height: 1;
-            display: flex; flex-direction: column; align-items: center;
+            color: white; font-weight: bold; pointer-events: none;
+            font-size: 8px; text-shadow: 1px 1px 1px rgba(0,0,0,0.8);
+            white-space: nowrap;
         }
-        .mini-no-txt { font-size: 8px; margin-bottom: 1px; text-shadow: 1px 1px 1px rgba(0,0,0,0.8); }
-        .mini-ryaku-txt { font-size: 7px; text-shadow: 1px 1px 1px rgba(0,0,0,0.8); }
 
         /* --- 個別ページ --- */
         .section-title { font-size: 16px; font-weight: bold; margin-bottom: 12px; color: #333; }
@@ -57,27 +64,28 @@
         .car-unit { display: flex; flex-direction: column; margin-bottom: 55px; }
         .car-visual-row { display: flex; align-items: center; gap: 20px; }
         
-        /* 車両画像：さらにひと回り大きく(250px) */
         .car-img-container { position: relative; width: 250px; height: 110px; flex-shrink: 0; }
         
+        /* 車体情報を4px上げる (bottomを15px→19pxへ) */
         .detail-car-body { 
-            width: 100%; height: 75px; position: absolute; bottom: 15px; z-index: 10;
+            width: 100%; height: 75px; position: absolute; bottom: 19px; z-index: 10;
             -webkit-mask-size: contain; -webkit-mask-repeat: no-repeat; -webkit-mask-position: center;
             mask-size: contain; mask-repeat: no-repeat; mask-position: center;
+        }
+
+        /* 詳細画面の車番も4px上げる */
+        .car-no-inline { 
+            position: absolute; top: calc(52% - 4px); left: 50%; transform: translate(-50%, -50%); 
+            z-index: 20; color: white; font-size: 20px; font-weight: bold; 
+            text-shadow: 1px 1px 3px rgba(0,0,0,1); pointer-events: none; 
+            white-space: nowrap; 
         }
 
         .panta-detail { position: absolute; top: -14px; width: 32px; z-index: 5; } 
         .panta-left { left: 35px; }
         .panta-right { right: 35px; }
         
-        .car-no-inline { 
-            position: absolute; top: 52%; left: 50%; transform: translate(-50%, -50%); 
-            z-index: 20; color: white; font-size: 20px; font-weight: bold; 
-            text-shadow: 1px 1px 3px rgba(0,0,0,1); pointer-events: none; 
-            white-space: nowrap; 
-        }
-        
-        .bogie { position: absolute; bottom: 0px; width: 65px; z-index: 5; }
+        .bogie { position: absolute; bottom: 4px; width: 65px; z-index: 5; }
         .bogie-left { left: 35px; }
         .bogie-right { right: 35px; }
         
@@ -174,13 +182,13 @@ function renderTop() {
             cars.forEach(c => {
                 const noPart = c.車両番号.split('-').pop();
                 const pKey = c.左パンタ || c.右パンタ;
+                const ryaku = getRyaku(c.車両番号);
                 html += `
                 <div class="mini-car-container">
                     ${pKey ? `<img src="body/${PANTA_MAP[pKey] || 'p1'}.png" class="mini-panta">` : ''}
                     <div class="mini-car-body" style="background-color:${c.車体色 || '#999'}; -webkit-mask-image: url('body/${c.車体アイコン}.png');"></div>
                     <div class="mini-info-in-body">
-                        <span class="mini-no-txt">${noPart}</span>
-                        <span class="mini-ryaku-txt">${getRyaku(c.車両番号)}</span>
+                        ${ryaku}${noPart}
                     </div>
                 </div>`;
             });
@@ -222,7 +230,7 @@ function renderDetail(name) {
             <div class="car-unit">
                 <div class="car-visual-row">
                     <div class="car-img-container">
-                        ${c.左パンタ ? `<img src="body/${PANTA_MAP[c.左パンタ] || 'p1'}.png" class="panta-detail panta-left">` : ''}
+                        ${c.左パンタ ? `<img src="body/${PANTA_MAP[c.leftパンタ] || PANTA_MAP[c.左パンタ] || 'p1'}.png" class="panta-detail panta-left">` : ''}
                         ${c.右パンタ ? `<img src="body/${PANTA_MAP[c.右パンタ] || 'p1'}.png" class="panta-detail panta-right">` : ''}
                         <div class="detail-car-body" style="background-color:${c.車体色 || '#999'}; -webkit-mask-image: url('body/${c.車体アイコン}.png');"></div>
                         <div class="car-no-inline">${c.車両番号}</div>
