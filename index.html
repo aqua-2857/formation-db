@@ -5,12 +5,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>形成-DB 編成表</title>
     <style>
-        /* ご指定のカラーを反映 */
         :root { 
             --header-bg: #1c1c1c; 
             --main-bg: #f0f0f0; 
             --text-main: #333333;
             --sub-gray: #808080;
+            --bar-bg: #333333; /* 系統・形式バーの色を変更 */
         }
 
         body { font-family: sans-serif; background: var(--main-bg); margin: 0; color: var(--text-main); -webkit-tap-highlight-color: transparent; }
@@ -19,35 +19,36 @@
         .header img { height: 22px; filter: brightness(0) invert(1); }
 
         /* アコーディオン */
-        .system-section { background: var(--sub-gray); color: white; padding: 12px 15px; display: flex; align-items: center; justify-content: space-between; margin-top: 1px; cursor: pointer; }
+        .system-section { background: var(--bar-bg); color: white; padding: 12px 15px; display: flex; align-items: center; justify-content: space-between; margin-top: 1px; cursor: pointer; }
         .system-title { display: flex; align-items: center; gap: 10px; font-weight: bold; }
         .system-icon { width: 35px; height: 35px; background: white; border-radius: 4px; object-fit: contain; }
         .arrow { transition: transform 0.3s; font-size: 12px; }
 
-        /* 編成リスト背景：なし（背景色を継承） */
         .formation-list-bg { padding: 15px 10px; display: none; }
         .formation-list-bg.show { display: block; }
         .direction-label { color: var(--sub-gray); font-size: 11px; margin-bottom: 25px; display: flex; justify-content: space-between; font-weight: bold; }
 
         /* --- 編成表（トップ画面） --- */
         .formation-row { display: flex; align-items: center; gap: 8px; margin-bottom: 20px; cursor: pointer; }
-        .f-name-tag { background: white; color: var(--text-main); padding: 2px 8px; border-radius: 10px; font-weight: bold; min-width: 35px; text-align: center; font-size: 13px; border: 1px solid #ccc; }
-        .car-mini-list { display: flex; gap: 4px; align-items: flex-end; }
         
+        /* 編成名タグ：背景なしに変更 */
+        .f-name-tag { background: none; color: var(--text-main); padding: 2px 4px; font-weight: bold; min-width: 35px; text-align: center; font-size: 13px; }
+        
+        .car-mini-list { display: flex; gap: 4px; align-items: flex-end; }
         .mini-car-container { position: relative; width: 68px; height: 48px; }
         
-        /* パンタグラフ：左8px, 上14px, 幅10px */
-        .mini-panta { position: absolute; left: 8px; top: 14px; width: 10px; z-index: 5; }
+        /* パンタグラフ：さらに4px上げる（14px → 10px） */
+        .mini-panta { position: absolute; left: 8px; top: 10px; width: 10px; z-index: 5; }
         
-        /* 車体：2px上げ */
+        /* 車体：さらに4px上げる（bottom 2px → 6px） */
         .mini-car-body { 
-            width: 100%; height: 28px; position: absolute; bottom: 2px; z-index: 10;
+            width: 100%; height: 28px; position: absolute; bottom: 6px; z-index: 10;
             -webkit-mask-size: contain; -webkit-mask-repeat: no-repeat; -webkit-mask-position: bottom;
             mask-size: contain; mask-repeat: no-repeat; mask-position: bottom;
         }
 
         .mini-info-in-body { 
-            position: absolute; bottom: 6px; width: 100%; text-align: center; z-index: 20;
+            position: absolute; bottom: 10px; width: 100%; text-align: center; z-index: 20;
             color: white; font-weight: bold; pointer-events: none;
             font-size: 8px; text-shadow: 1px 1px 1px rgba(0,0,0,0.8);
             white-space: nowrap;
@@ -59,15 +60,11 @@
         .info-row { display: flex; margin-bottom: 5px; }
         .info-label { width: 100px; color: var(--sub-gray); flex-shrink: 0; }
         
-        .stamp-icon-large { height: 36px; margin-right: 10px; vertical-align: middle; }
-
-        /* セクション間の区切り線 */
         .divider { height: 1px; background-color: var(--sub-gray); margin: 10px 20px; }
 
         .car-detail-list { padding: 0 20px; }
         .car-unit { display: flex; flex-direction: column; margin-bottom: 55px; }
         .car-visual-row { display: flex; align-items: center; gap: 20px; }
-        
         .car-img-container { position: relative; width: 250px; height: 110px; flex-shrink: 0; }
         
         .detail-car-body { 
@@ -95,10 +92,11 @@
         .car-data-row { display: flex; align-items: center; gap: 15px; margin-top: 12px; font-size: 13px; }
         .stamp-small { height: 36px; }
 
+        /* 車歴セクション：日付の背景なし、太字に変更 */
         .history-section { border-top: 1px solid var(--sub-gray); margin-top: 20px; padding: 20px; }
         .history-item { margin-bottom: 18px; }
         .history-top-row { display: flex; align-items: center; gap: 10px; margin-bottom: 5px; }
-        .history-date { background: white; padding: 2px 8px; border-radius: 4px; font-size: 12px; border: 1px solid #ccc; font-weight: bold; }
+        .history-date { background: none; padding: 0; font-size: 13px; font-weight: bold; color: var(--text-main); }
         .history-stamp { height: 26px; }
 
         .hidden { display: none !important; }
@@ -139,9 +137,20 @@
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
 <script>
-// JavaScript部分はロジックに変更がないため、台車表示のバグ修正版をそのまま適用しています
 let allData = [];
 const PANTA_MAP = { '◇': 'p0', '＜': 'p1', '＞': 'p2', '<': 'py1', '>': 'py2' };
+
+// 日付フォーマット変換関数 (yyyy/m/d -> yyyy年m月d日, yyyy/m -> yyyy年m月)
+function formatDateJP(dateStr) {
+    if (!dateStr || dateStr === "") return "";
+    const parts = dateStr.split('/');
+    if (parts.length === 3) {
+        return `${parts[0]}年${parts[1]}月${parts[2]}日`;
+    } else if (parts.length === 2) {
+        return `${parts[0]}年${parts[1]}月`;
+    }
+    return dateStr;
+}
 
 Papa.parse('data.csv', {
     download: true, header: true, skipEmptyLines: true,
@@ -238,8 +247,8 @@ function renderDetail(name) {
             <div class="car-unit">
                 <div class="car-visual-row">
                     <div class="car-img-container">
-                        ${c.左パンタ ? `<img src="body/${PANTA_MAP[c.左パンタ] || 'p1'}.png" class="panta-detail panta-left">` : ''}
-                        ${c.右パンタ ? `<img src="body/${PANTA_MAP[c.右パンタ] || 'p1'}.png" class="panta-detail panta-right">` : ''}
+                        ${c.leftパンタ ? `<img src="body/${PANTA_MAP[c.左パンタ] || 'p1'}.png" class="panta-detail panta-left">` : ''}
+                        ${c.rightパンタ ? `<img src="body/${PANTA_MAP[c.右パンタ] || 'p1'}.png" class="panta-detail panta-right">` : ''}
                         <div class="detail-car-body" style="background-color:${c.車体色 || '#999'}; -webkit-mask-image: url('body/${c.車体アイコン}.png');"></div>
                         <div class="car-no-inline">${c.車両番号}</div>
                         ${c.左台車 ? `<img src="body/${c.左台車}.png" class="bogie bogie-left">` : ''}
@@ -247,7 +256,7 @@ function renderDetail(name) {
                     </div>
                     <div class="car-meta">
                         <div>${c.製造所}</div>
-                        <div>${c.落成日}</div>
+                        <div>${formatDateJP(c.落成日)}</div>
                     </div>
                 </div>
                 <div class="car-data-row">
@@ -261,7 +270,8 @@ function renderDetail(name) {
     historyList.innerHTML = '';
     const addHist = (date, stamp, text) => {
         if (!date || date === "") return;
-        historyList.innerHTML += `<div class="history-item"><div class="history-top-row"><div class="history-date">${date}</div><img src="history/${stamp}.png" class="history-stamp" onerror="this.style.display='none'"></div><div class="history-desc">${text}</div></div>`;
+        const jpDate = formatDateJP(date);
+        historyList.innerHTML += `<div class="history-item"><div class="history-top-row"><div class="history-date">${jpDate}</div><img src="history/${stamp}.png" class="history-stamp" onerror="this.style.display='none'"></div><div class="history-desc">${text}</div></div>`;
     };
     addHist(top.落成日, 'rakusei', `${top.製造所}にて落成。`);
     addHist(top.組成日, 'sosei', `${top.所属基地}にて組成。`);
