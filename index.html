@@ -51,7 +51,10 @@
         .detail-info-box { padding: 20px; color: var(--text-main); line-height: 1.6; font-size: 14px; }
         .info-row { display: flex; margin-bottom: 5px; }
         .info-label { width: 100px; color: var(--sub-gray); flex-shrink: 0; }
-        .stamp-icon-large { height: 36px; margin-right: 10px; vertical-align: middle; }
+        
+        /* スタンプ：複数並んだ時のためにflexに */
+        .stamp-container { display: inline-flex; align-items: center; gap: 5px; vertical-align: middle; }
+        .stamp-icon-large { height: 36px; }
 
         .divider { height: 1px; background-color: var(--sub-gray); margin: 10px 20px; }
 
@@ -84,10 +87,12 @@
         .car-data-row { display: flex; align-items: center; gap: 12px; margin-top: 8px; font-size: 13px; color: #333333; }
         .stamp-small { height: 32px; }
 
+        /* 車歴セクション */
         .history-section { border-top: 1px solid var(--sub-gray); margin-top: 20px; padding: 20px; }
         .history-item { margin-bottom: 18px; }
         .history-top-row { display: flex; align-items: center; gap: 10px; margin-bottom: 5px; }
         .history-date { background: none; padding: 0; font-size: 13px; font-weight: bold; color: var(--text-main); white-space: nowrap; }
+        .history-stamp-container { display: flex; gap: 4px; }
         .history-stamp { height: 26px; }
 
         .hidden { display: none !important; }
@@ -110,7 +115,7 @@
         <div class="info-row"><span class="info-label">車両形式</span> <span id="info-type"></span></div>
         <div class="info-row"><span class="info-label">所属基地</span> <span id="info-base"></span></div>
         <div class="info-row"><span class="info-label">ATACS-ID</span> <span id="info-atacs"></span></div>
-        <div id="info-stamps" style="margin-top:12px;"></div>
+        <div id="info-stamps" style="margin-top:12px; display:flex; align-items:center; gap:8px;"></div>
     </div>
 
     <div class="divider"></div>
@@ -131,21 +136,51 @@
 let allData = [];
 const PANTA_MAP = { '◇': 'p0', '＜': 'p1', '＞': 'p2', '<': 'py1', '>': 'py2' };
 
+// --- 強化版：日付変換ロジック ---
 function formatDateJP(dateStr) {
     if (!dateStr || dateStr === "") return "";
+    
+    // 範囲指定があるかチェック (例: 2025/10/15-17)
+    if (dateStr.includes('-')) {
+        const parts = dateStr.split('-');
+        const start = parts[0].split('/'); // [2025, 10, 15]
+        const end = parts[1].split('/');   // [17] または [12, 1]
+        
+        if (start.length === 3) {
+            let result = `${start[0]}年${start[1]}月${start[2]}日`;
+            if (end.length === 1) {
+                // 2025/10/15-17 のパターン
+                return result + `~${end[0]}日`;
+            } else if (end.length === 2) {
+                // 2025/11/28-12/1 のパターン
+                return result + `~${end[0]}月${end[1]}日`;
+            }
+        }
+    }
+
+    // 通常の変換
     const parts = dateStr.split('/');
     if (parts.length === 3) return `${parts[0]}年${parts[1]}月${parts[2]}日`;
     if (parts.length === 2) return `${parts[0]}年${parts[1]}月`;
     return dateStr;
 }
 
-// CSV読み込み設定（空行を無視する設定を追加済み）
+// --- スタンプ表示用ヘルパー ---
+function getStampsHTML(stampStr, className, folder = 'stamp') {
+    if (!stampStr) return '';
+    // カンマで区切って配列にし、それぞれ画像タグを生成
+    return stampStr.split(',').map(s => {
+        const name = s.trim();
+        if (!name) return '';
+        return `<img src="${folder}/${name}.png" class="${className}" onerror="this.style.display='none'">`;
+    }).join('');
+}
+
 Papa.parse('data.csv', {
     download: true, 
     header: true, 
     skipEmptyLines: 'greedy', 
     complete: function(results) {
-        // 編成名が存在するデータのみを抽出
         allData = results.data.filter(r => r.編成名 && r.編成名.trim() !== "");
         renderTop();
     }
@@ -179,7 +214,6 @@ function renderTop() {
         
         container.insertAdjacentHTML('beforeend', sysHtml);
         const rowsContainer = document.getElementById(sysId).querySelector('.rows-container');
-        
         const fNames = [...new Set(allData.filter(r => r.形式 === sys).map(r => r.編成名))];
         fNames.forEach(name => {
             const cars = allData.filter(r => r.編成名 === name).sort((a,b) => a.号車 - b.号車);
@@ -229,7 +263,8 @@ function renderDetail(name) {
     document.getElementById('info-atacs').innerText = top["ATACS-ID"] || "-";
 
     const infoStamps = document.getElementById('info-stamps');
-    infoStamps.innerHTML = top["編成情報(選択)"] ? `<img src="stamp/${top["編成情報(選択)"]}.png" class="stamp-icon-large">` : '';
+    // 編成スタンプ（複数対応）
+    infoStamps.innerHTML = getStampsHTML(top["編成情報(選択)"], 'stamp-icon-large', 'stamp');
     infoStamps.innerHTML += `<span>${top["編成情報(記述)"] || ''}</span>`;
 
     const carContainer = document.getElementById('car-details-container');
@@ -252,7 +287,9 @@ function renderDetail(name) {
                     </div>
                 </div>
                 <div class="car-data-row">
-                    ${c["車両情報(選択)"] ? `<img src="stamp/${c["車両情報(選択)"]}.png" class="stamp-small">` : ''}
+                    <div class="stamp-container">
+                        ${getStampsHTML(c["車両情報(選択)"], 'stamp-small', 'stamp')}
+                    </div>
                     <span>${c["車両情報(記述)"] || ''}</span>
                 </div>
             </div>`;
@@ -263,7 +300,8 @@ function renderDetail(name) {
     const addHist = (date, stamp, text) => {
         if (!date || date === "") return;
         const jpDate = formatDateJP(date);
-        historyList.innerHTML += `<div class="history-item"><div class="history-top-row"><div class="history-date">${jpDate}</div><img src="history/${stamp}.png" class="history-stamp" onerror="this.style.display='none'"></div><div class="history-desc">${text}</div></div>`;
+        const stampsHTML = getStampsHTML(stamp, 'history-stamp', 'history');
+        historyList.innerHTML += `<div class="history-item"><div class="history-top-row"><div class="history-date">${jpDate}</div><div class="history-stamp-container">${stampsHTML}</div></div><div class="history-desc">${text}</div></div>`;
     };
     addHist(top.落成日, 'rakusei', `${top.製造所}にて落成。`);
     addHist(top.組成日, 'sosei', `${top.所属基地}にて組成。`);
