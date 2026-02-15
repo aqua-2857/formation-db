@@ -109,12 +109,39 @@ let currentSystem = "";
 let currentCompany = "";
 const PANTA_MAP = { '◇': 'p0', '＜': 'p1', '＞': 'p2', '<': 'py1', '>': 'py2' };
 
+// 指示通りのすべての日付パターンに対応する変換関数
 function formatDateJP(dateStr) {
     if (!dateStr || dateStr === "") return "";
-    const p = dateStr.split('/');
-    if (p.length === 3) return `${p[0]}年${p[1]}月${p[2]}日`;
-    if (p.length === 2) return `${p[0]}年${p[1]}月`;
-    return dateStr;
+    
+    // 単一の日付（YYYY/MM/DD or YYYY/MM）を変換する補助関数
+    const conv = (s) => {
+        const p = s.split('/');
+        if (p.length === 3) return `${p[0]}年${p[1]}月${p[2]}日`;
+        if (p.length === 2) return `${p[0]}年${p[1]}月`;
+        return s;
+    };
+
+    // 範囲指定（-）が含まれる場合
+    if (dateStr.includes('-')) {
+        const parts = dateStr.split('-');
+        const start = parts[0];
+        const end = parts[1];
+
+        // パターン：2025/12/31-2026/1/1
+        if (end.includes('/')) {
+            return `${conv(start)}~${conv(end)}`;
+        } 
+        // パターン：2025/11/7-8
+        else {
+            const startParts = start.split('/');
+            if (startParts.length === 3) {
+                return `${conv(start)}~${end}日`;
+            }
+            return `${conv(start)}~${end}`;
+        }
+    }
+
+    return conv(dateStr);
 }
 
 function getStampsHTML(stampStr, className, folder = 'stamp') {
@@ -275,18 +302,17 @@ function renderDetail(name) {
     // 1. 落成
     if (top.落成日) {
         let rakuseiBody = `${top.製造所 || ''}にて落成。`;
-        // 甲種も配給もない場合のみ、落成の本文に新製配置を追記
         if (!top.甲種輸送日 && !top.新製配給日 && top.新製配置) {
             rakuseiBody += shinseiText;
         }
         addH(top.落成日, 'rakusei', rakuseiBody);
     }
 
-    // 2. 甲種輸送
+    // 2. 甲種輸送（独立表示）
     if (top.甲種輸送日) {
         addH(top.甲種輸送日, 'kosyu', shinseiText);
     } 
-    // 3. 新製配給 (甲種がなく、配給がある場合。または独立表示)
+    // 3. 新製配給（甲種がなく配給がある場合、または独立表示）
     else if (top.新製配給日) {
         addH(top.新製配給日, 'haikyu', shinseiText);
     }
