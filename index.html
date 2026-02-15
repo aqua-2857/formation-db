@@ -27,17 +27,18 @@
         .formation-list-bg.show { display: block; }
         .direction-label { color: var(--sub-gray); font-size: 11px; margin-bottom: 25px; display: flex; justify-content: space-between; font-weight: bold; }
 
-        /* --- 編成表（トップ画面）レイアウト --- */
         .formation-row { display: flex; align-items: center; gap: 10px; margin-bottom: 25px; cursor: pointer; }
         .f-name-tag { background: none; color: var(--text-main); font-weight: bold; min-width: 45px; text-align: center; font-size: 14px; flex-shrink: 0; }
         
         .car-mini-list { display: flex; gap: 4px; align-items: flex-end; }
         .mini-car-container { position: relative; width: 68px; height: 48px; }
         
-        /* ミニ車両のパーツ位置 */
+        /* 編成表パンタ設定 */
         .mini-panta { position: absolute; width: 10px; z-index: 5; top: 6px; }
         .mini-panta-l { left: 8px; }
         .mini-panta-r { right: 8px; }
+        /* 予備パンタのみ4px下げる */
+        .mini-panta.low-panta { top: 10px; }
         
         .mini-bogie { position: absolute; width: 16px; z-index: 5; bottom: 6px; }
         .mini-bogie-l { left: 8px; }
@@ -46,12 +47,10 @@
         .mini-car-body { width: 100%; height: 28px; position: absolute; bottom: 10px; z-index: 10; background-size: contain; background-repeat: no-repeat; background-position: bottom; }
         .mini-info-in-body { position: absolute; bottom: 14px; width: 100%; text-align: center; z-index: 20; color: white; font-weight: bold; font-size: 8px; text-shadow: 1px 1px 1px rgba(0,0,0,0.8); white-space: nowrap; pointer-events: none; }
 
-        /* --- 個別ページ --- */
         .section-title { font-size: 16px; font-weight: bold; margin-bottom: 12px; color: var(--text-main); }
         .detail-info-box { padding: 20px; color: var(--text-main); line-height: 1.6; font-size: 14px; }
         .info-row { display: flex; margin-bottom: 5px; }
         .info-label { width: 100px; color: var(--sub-gray); flex-shrink: 0; }
-        .stamp-container { display: inline-flex; align-items: center; gap: 5px; vertical-align: middle; }
         .stamp-icon-large { height: 36px; }
 
         .divider { height: 1px; background-color: var(--sub-gray); margin: 10px 20px; }
@@ -63,10 +62,12 @@
         .detail-car-body { width: 100%; height: 55px; position: absolute; bottom: 14px; z-index: 10; background-size: contain; background-repeat: no-repeat; background-position: center; }
         .car-no-inline { position: absolute; top: calc(52% - 3px); left: 50%; transform: translate(-50%, -50%); z-index: 20; color: white; font-size: 14px; font-weight: bold; text-shadow: 1px 1px 2px rgba(0,0,0,1); pointer-events: none; white-space: nowrap; }
 
-        /* 詳細パンタ位置：ご指定通り下げました(top 3px) */
-        .panta-detail { position: absolute; top: 3px; width: 24px; z-index: 5; } 
+        /* 詳細画面パンタ設定 */
+        .panta-detail { position: absolute; top: -5px; width: 24px; z-index: 5; } 
         .panta-left { left: 25px; }
         .panta-right { right: 25px; }
+        /* 予備パンタのみ10px下げる */
+        .panta-detail.low-panta { top: 5px; }
         
         .bogie { position: absolute; bottom: 4px; width: 45px; z-index: 5; }
         .bogie-left { left: 25px; }
@@ -187,9 +188,11 @@ function renderTop() {
             let h = `<div class="f-name-tag">${name}</div><div class="car-mini-list">`;
             cars.forEach(c => {
                 const no = c.車両番号.split('-').pop();
+                const lp = PANTA_MAP[c.左パンタ];
+                const rp = PANTA_MAP[c.右パンタ];
                 h += `<div class="mini-car-container">
-                    ${c.左パンタ ? `<img src="parts/${PANTA_MAP[c.左パンタ]||'p1'}.png" class="mini-panta mini-panta-l">` : ''}
-                    ${c.右パンタ ? `<img src="parts/${PANTA_MAP[c.右パンタ]||'p1'}.png" class="mini-panta mini-panta-r">` : ''}
+                    ${lp ? `<img src="parts/${lp}.png" class="mini-panta mini-panta-l ${lp.startsWith('py') ? 'low-panta' : ''}">` : ''}
+                    ${rp ? `<img src="parts/${rp}.png" class="mini-panta mini-panta-r ${rp.startsWith('py') ? 'low-panta' : ''}">` : ''}
                     <div class="mini-car-body" style="background-image: url('body/${c.車体アイコン}.png');"></div>
                     <div class="mini-info-in-body">${getRyaku(c.車両番号)}${no}</div>
                     ${c.左台車 ? `<img src="parts/${c.左台車}.png" class="mini-bogie mini-bogie-l">` : ''}
@@ -223,15 +226,17 @@ function renderDetail(name) {
     const cCon = document.getElementById('car-details-container');
     cCon.innerHTML = '<div class="section-title">車両情報</div>';
     cars.forEach(c => {
+        const lp = PANTA_MAP[c.左パンタ];
+        const rp = PANTA_MAP[c.右パンタ];
         cCon.innerHTML += `<div class="car-unit">
             <div class="car-visual-row">
                 <div class="car-img-container">
-                    ${c.左パンタ ? `<img src="parts/${PANTA_MAP[c.左パンタ]||'p1'}.png" class="panta-detail panta-left">` : ''}
-                    ${c.右パンタ ? `<img src="parts/${PANTA_MAP[c.右パンタ]||'p1'}.png" class="panta-detail panta-right">` : ''}
+                    ${lp ? `<img src="parts/${lp}.png" class="panta-detail panta-left ${lp.startsWith('py') ? 'low-panta' : ''}">` : ''}
+                    ${rp ? `<img src="parts/${rp}.png" class="panta-detail panta-right ${rp.startsWith('py') ? 'low-panta' : ''}">` : ''}
                     <div class="detail-car-body" style="background-image: url('body/${c.車体アイコン}.png');"></div>
                     <div class="car-no-inline">${c.車両番号}</div>
-                    ${c.左台車?`<img src="parts/${c.left台車||c.左台車}.png" class="bogie bogie-left">`:''}
-                    ${c.右台車?`<img src="parts/${c.right台車||c.右台車}.png" class="bogie bogie-right">`:''}
+                    ${c.左台車?`<img src="parts/${c.左台車}.png" class="bogie bogie-left">`:''}
+                    ${c.右台車?`<img src="parts/${c.右台車}.png" class="bogie bogie-right">`:''}
                 </div>
                 <div class="car-meta"><div>${c.製造所}</div><div>${formatDateJP(c.落成日)}</div></div>
             </div>
