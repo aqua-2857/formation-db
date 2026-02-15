@@ -15,18 +15,22 @@
 
         body { font-family: sans-serif; background: var(--main-bg); margin: 0; color: var(--text-main); -webkit-tap-highlight-color: transparent; }
         
+        /* ヘッダー */
         .header { background: var(--header-bg); color: white; padding: 15px; display: flex; align-items: center; gap: 10px; font-size: 1.1rem; position: sticky; top: 0; z-index: 100; }
         .header img { height: 22px; filter: brightness(0) invert(1); }
 
+        /* 系統見出しバー */
         .system-section { background: var(--bar-bg); color: white; padding: 12px 15px; display: flex; align-items: center; justify-content: space-between; margin-top: 1px; cursor: pointer; }
         .system-title { display: flex; align-items: center; gap: 10px; font-weight: bold; }
         .system-icon { width: 35px; height: 35px; background: white; border-radius: 4px; object-fit: contain; flex-shrink: 0; }
         .arrow { transition: transform 0.3s; font-size: 12px; }
 
+        /* 編成リスト背景 */
         .formation-list-bg { padding: 15px 10px; display: none; }
         .formation-list-bg.show { display: block; }
         .direction-label { color: var(--sub-gray); font-size: 11px; margin-bottom: 25px; display: flex; justify-content: space-between; font-weight: bold; }
 
+        /* 編成表（トップ画面）の車両レイアウト */
         .formation-row { display: flex; align-items: center; gap: 10px; margin-bottom: 25px; cursor: pointer; }
         .f-name-tag { background: none; color: var(--text-main); font-weight: bold; min-width: 45px; text-align: center; font-size: 14px; flex-shrink: 0; }
         
@@ -36,7 +40,7 @@
         .mini-panta { position: absolute; width: 10px; z-index: 5; top: 6px; }
         .mini-panta-l { left: 8px; }
         .mini-panta-r { right: 8px; }
-        .mini-panta.low-panta { top: 11px; } /* 予備パンタ調整済み */
+        .mini-panta.low-panta { top: 11px; } /* 予備パンタを5px下げ(6+5=11) */
         
         .mini-bogie { position: absolute; width: 16px; z-index: 5; bottom: 6px; }
         .mini-bogie-l { left: 8px; }
@@ -45,11 +49,11 @@
         .mini-car-body { width: 100%; height: 28px; position: absolute; bottom: 10px; z-index: 10; background-size: contain; background-repeat: no-repeat; background-position: bottom; }
         .mini-info-in-body { position: absolute; bottom: 14px; width: 100%; text-align: center; z-index: 20; color: white; font-weight: bold; font-size: 8px; text-shadow: 1px 1px 1px rgba(0,0,0,0.8); white-space: nowrap; pointer-events: none; }
 
+        /* 詳細画面 */
         .section-title { font-size: 16px; font-weight: bold; margin-bottom: 12px; color: var(--text-main); }
         .detail-info-box { padding: 20px; color: var(--text-main); line-height: 1.6; font-size: 14px; }
         .info-row { display: flex; margin-bottom: 5px; }
         .info-label { width: 100px; color: var(--sub-gray); flex-shrink: 0; }
-        .stamp-icon-large { height: 36px; }
 
         .divider { height: 1px; background-color: var(--sub-gray); margin: 10px 20px; }
 
@@ -63,21 +67,13 @@
         .panta-detail { position: absolute; top: -5px; width: 24px; z-index: 5; } 
         .panta-left { left: 25px; }
         .panta-right { right: 25px; }
-        .panta-detail.low-panta { top: 5px; } 
+        .panta-detail.low-panta { top: 5px; } /* 予備パンタを10px下げ(-5+10=5) */
         
         .bogie { position: absolute; bottom: 4px; width: 45px; z-index: 5; }
         .bogie-left { left: 25px; }
         .bogie-right { right: 25px; }
         
         .car-meta { font-size: 12px; color: #333333; font-weight: bold; flex-grow: 1; line-height: 1.4; }
-        .car-data-row { display: flex; align-items: center; gap: 12px; margin-top: 8px; font-size: 13px; color: #333333; }
-        .stamp-small { height: 32px; }
-
-        .history-section { border-top: 1px solid var(--sub-gray); margin-top: 20px; padding: 20px; }
-        .history-item { margin-bottom: 18px; }
-        .history-top-row { display: flex; align-items: center; gap: 10px; margin-bottom: 5px; }
-        .history-date { font-size: 13px; font-weight: bold; color: var(--text-main); white-space: nowrap; }
-        .history-stamp { height: 26px; }
 
         .hidden { display: none !important; }
     </style>
@@ -85,25 +81,13 @@
 <body>
 
 <div id="top-view">
-    <div class="header"><img src="stamp/f0.png" onerror="this.style.display='none'"> 仙石線系統</div>
+    <div class="header">車両編成DB</div>
     <div id="accordion-container"></div>
 </div>
 
 <div id="detail-view" class="hidden">
-    <div class="header" onclick="showTop()" style="cursor:pointer;">
-        <img src="stamp/f0.png" onerror="this.style.display='none'"> <span id="detail-title-name"></span>
-    </div>
-    
-    <div class="detail-info-box">
-        <div class="section-title">編成情報</div>
-        <div class="info-row"><span class="info-label">車両形式</span> <span id="info-type"></span></div>
-        <div class="info-row"><span class="info-label">所属基地</span> <span id="info-base"></span></div>
-        <div class="info-row"><span class="info-label">ATACS-ID</span> <span id="info-atacs"></span></div>
-        <div id="info-stamps" style="margin-top:12px; display:flex; align-items:center; gap:8px;"></div>
-    </div>
-    <div class="divider"></div>
-    <div class="car-detail-list"><div id="car-details-container"></div></div>
-    <div class="history-section"><div class="section-title">車歴</div><div id="history-list"></div></div>
+    <div class="header" onclick="showTop()" style="cursor:pointer;">編成詳細</div>
+    <div id="detail-content"></div>
 </div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
@@ -116,11 +100,6 @@ function formatDateJP(dateStr) {
     const p = dateStr.split('/');
     if (p.length === 3) return `${p[0]}年${p[1]}月${p[2]}日`;
     return dateStr;
-}
-
-function getStampsHTML(stampStr, className, folder = 'stamp') {
-    if (!stampStr) return '';
-    return stampStr.split(',').map(s => `<img src="${folder}/${s.trim()}.png" class="${className}" onerror="this.style.display='none'">`).join('');
 }
 
 Papa.parse('data.csv', {
@@ -139,7 +118,7 @@ function renderTop() {
     systems.forEach(sys => {
         const sysId = `list-${sys.replace(/\s+/g, '')}`;
         const firstData = allData.find(r => r.形式 === sys);
-        const iconName = firstData ? firstData.形式選択欄の見出しアイコン : '';
+        const iconName = firstData ? firstData.見出しアイコン : ''; // CSVの「見出しアイコン」列を使用
 
         container.insertAdjacentHTML('beforeend', `
             <div class="system-section" onclick="toggleSection('${sysId}', this)">
@@ -150,7 +129,7 @@ function renderTop() {
                 <div class="arrow">▼</div>
             </div>
             <div id="${sysId}" class="formation-list-bg">
-                <div class="direction-label"><span>◀︎仙台・あおば通</span><span>石巻▶︎</span></div>
+                <div class="direction-label"><span>◀︎${firstData.左方向 || ""}</span><span>${firstData.右方向 || ""}▶︎</span></div>
                 <div class="rows-container"></div>
             </div>`);
         
@@ -165,7 +144,7 @@ function renderTop() {
             cars.forEach(c => {
                 const lp = PANTA_MAP[c.左パンタ];
                 const rp = PANTA_MAP[c.右パンタ];
-                const ryaku = c.車両略号 || ""; // CSVからそのまま取得
+                const ryaku = c.略号 || ""; // CSVからそのまま取得
                 const lastNo = c.車両番号 ? c.車両番号.split('-').pop() : "";
 
                 h += `<div class="mini-car-container">
@@ -196,32 +175,36 @@ function renderDetail(name) {
     window.scrollTo(0,0);
     const cars = allData.filter(r => r.編成名 === name).sort((a,b) => a.号車 - b.号車);
     const top = cars[0];
-    document.getElementById('detail-title-name').innerText = name + "編成";
-    document.getElementById('info-type').innerText = top.形式;
-    document.getElementById('info-base').innerText = top.所属基地;
-    document.getElementById('info-atacs').innerText = top["ATACS-ID"] || "-";
-    document.getElementById('info-stamps').innerHTML = getStampsHTML(top["編成情報(選択)"], 'stamp-icon-large');
-    const cCon = document.getElementById('car-details-container');
-    cCon.innerHTML = '<div class="section-title">車両情報</div>';
+    
+    let h = `
+    <div class="detail-info-box">
+        <div class="section-title">編成情報</div>
+        <div class="info-row"><span class="info-label">車両形式</span> <span>${top.形式}${top.番台 || ""}</span></div>
+        <div class="info-row"><span class="info-label">所属基地</span> <span>${top.所属基地}</span></div>
+    </div>
+    <div class="divider"></div>
+    <div class="car-detail-list">`;
+
     cars.forEach(c => {
         const lp = PANTA_MAP[c.左パンタ];
         const rp = PANTA_MAP[c.右パンタ];
-        cCon.innerHTML += `<div class="car-unit">
+        h += `<div class="car-unit">
             <div class="car-visual-row">
                 <div class="car-img-container">
                     ${lp ? `<img src="parts/${lp}.png" class="panta-detail panta-left ${lp.startsWith('py') ? 'low-panta' : ''}">` : ''}
                     ${rp ? `<img src="parts/${rp}.png" class="panta-detail panta-right ${rp.startsWith('py') ? 'low-panta' : ''}">` : ''}
                     <div class="detail-car-body" style="background-image: url('body/${c.車体アイコン}.png');"></div>
                     <div class="car-no-inline">${c.車両番号}</div>
-                    ${c.左台車?`<img src="parts/${c.左台車}.png" class="bogie bogie-left">`:''}
-                    ${c.右台車?`<img src="parts/${c.右台車}.png" class="bogie bogie-right">`:''}
+                    ${c.左台車 ? `<img src="parts/${c.左台車}.png" class="bogie bogie-left">` : ''}
+                    ${c.右台車 ? `<img src="parts/${c.右台車}.png" class="bogie bogie-right">` : ''}
                 </div>
-                <div class="car-meta"><div>${c.製造所}</div><div>${formatDateJP(c.落成日)}</div></div>
+                <div class="car-meta"><div>落成：${formatDateJP(c.落成日)}</div><div>製造：${c.製造所}</div></div>
             </div>
-            <div class="car-data-row"><div class="stamp-container">${getStampsHTML(c["車両情報(選択)"],'stamp-small')}</div></div>
         </div>`;
     });
+    document.getElementById('detail-content').innerHTML = h + `</div>`;
 }
+
 function showTop() { document.getElementById('top-view').classList.remove('hidden'); document.getElementById('detail-view').classList.add('hidden'); }
 </script>
 </body>
