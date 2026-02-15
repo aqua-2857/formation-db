@@ -52,25 +52,20 @@
         .info-row { display: flex; margin-bottom: 5px; }
         .info-label { width: 100px; color: var(--sub-gray); flex-shrink: 0; }
         
-        /* 編成情報スタンプサイズ（36pxに戻し） */
         .stamp-icon-large { height: 36px; margin-right: 10px; vertical-align: middle; }
 
         .divider { height: 1px; background-color: var(--sub-gray); margin: 10px 20px; }
 
         .car-detail-list { padding: 0 20px; }
         .car-unit { display: flex; flex-direction: column; margin-bottom: 45px; }
-        .car-visual-row { display: flex; align-items: center; gap: 12px; } /* gapを縮小 */
+        .car-visual-row { display: flex; align-items: center; gap: 12px; }
         
-        /* 車両画像コンテナを全体的に縮小 */
         .car-img-container { position: relative; width: 180px; height: 85px; flex-shrink: 0; }
-        
         .detail-car-body { 
             width: 100%; height: 55px; position: absolute; bottom: 14px; z-index: 10;
             -webkit-mask-size: contain; -webkit-mask-repeat: no-repeat; -webkit-mask-position: center;
             mask-size: contain; mask-repeat: no-repeat; mask-position: center;
         }
-
-        /* 車番も縮小に合わせて調整 */
         .car-no-inline { 
             position: absolute; top: calc(52% - 3px); left: 50%; transform: translate(-50%, -50%); 
             z-index: 20; color: white; font-size: 14px; font-weight: bold; 
@@ -81,25 +76,29 @@
         .panta-detail { position: absolute; top: -5px; width: 24px; z-index: 5; } 
         .panta-left { left: 25px; }
         .panta-right { right: 25px; }
-        
         .bogie { position: absolute; bottom: 4px; width: 45px; z-index: 5; }
         .bogie-left { left: 25px; }
         .bogie-right { right: 25px; }
         
-        /* 製造所と日付のテキストエリア */
+        /* 製造所と日付：指定カラー #333333 に変更 */
         .car-meta { 
             font-size: 12px; 
-            color: #666; 
+            color: #333333; 
             font-weight: bold; 
             flex-grow: 1; 
             line-height: 1.4;
         }
-        /* 日付が改行されないように指定 */
-        .car-meta div { 
-            white-space: nowrap; 
-        }
+        .car-meta div { white-space: nowrap; }
 
-        .car-data-row { display: flex; align-items: center; gap: 12px; margin-top: 8px; font-size: 13px; }
+        /* 車両情報の記述エリア：指定カラー #333333 に変更 */
+        .car-data-row { 
+            display: flex; 
+            align-items: center; 
+            gap: 12px; 
+            margin-top: 8px; 
+            font-size: 13px; 
+            color: #333333;
+        }
         .stamp-small { height: 32px; }
 
         .history-section { border-top: 1px solid var(--sub-gray); margin-top: 20px; padding: 20px; }
