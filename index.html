@@ -18,8 +18,11 @@
         .header { background: var(--header-bg); color: white; padding: 15px; display: flex; align-items: center; gap: 10px; font-size: 1.1rem; position: sticky; top: 0; z-index: 100; }
         .header img { height: 22px; filter: brightness(0) invert(1); }
 
+        /* 系統バーのスタイル */
         .system-section { background: var(--bar-bg); color: white; padding: 12px 15px; display: flex; align-items: center; justify-content: space-between; margin-top: 1px; cursor: pointer; }
         .system-title { display: flex; align-items: center; gap: 10px; font-weight: bold; }
+        
+        /* 見出しアイコンの設定 */
         .system-icon { width: 35px; height: 35px; background: white; border-radius: 4px; object-fit: contain; }
         .arrow { transition: transform 0.3s; font-size: 12px; }
 
@@ -124,7 +127,6 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
 <script>
 let allData = [];
-// パンタグラフのファイル名マップ
 const PANTA_MAP = { '◇': 'p0', '＜': 'p1', '＞': 'p2', '<': 'py1', '>': 'py2' };
 
 function formatDateJP(dateStr) {
@@ -175,9 +177,17 @@ function renderTop() {
     systems.forEach(sys => {
         const isE131 = sys.includes('E131');
         const sysId = `list-${sys.replace(/\s+/g, '')}`;
+        
+        // 系統ごとの最初のデータから見出しアイコン名を取得
+        const firstData = allData.find(r => r.形式 === sys);
+        const iconName = firstData ? firstData.形式選択欄の見出しアイコン : '';
+
         container.insertAdjacentHTML('beforeend', `
             <div class="system-section" onclick="toggleSection('${sysId}', this)">
-                <div class="system-title"><img src="icon/b1.png" class="system-icon"> ${sys}</div>
+                <div class="system-title">
+                    ${iconName ? `<img src="icon/${iconName}.png" class="system-icon" onerror="this.style.display='none'">` : ''}
+                    ${sys}
+                </div>
                 <div class="arrow ${isE131 ? 'open' : ''}">${isE131 ? '▲' : '▼'}</div>
             </div>
             <div id="${sysId}" class="formation-list-bg ${isE131 ? 'show' : ''}">
