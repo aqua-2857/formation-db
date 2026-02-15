@@ -36,7 +36,7 @@
         .mini-panta { position: absolute; width: 10px; z-index: 5; top: 6px; }
         .mini-panta-l { left: 8px; }
         .mini-panta-r { right: 8px; }
-        .mini-panta.low-panta { top: 11px; } /* 予備パンタさらに1px下げ */
+        .mini-panta.low-panta { top: 11px; } 
         
         .mini-bogie { position: absolute; width: 16px; z-index: 5; bottom: 6px; }
         .mini-bogie-l { left: 8px; }
@@ -45,7 +45,7 @@
         .mini-car-body { width: 100%; height: 28px; position: absolute; bottom: 10px; z-index: 10; background-size: contain; background-repeat: no-repeat; background-position: bottom; }
         .mini-info-in-body { position: absolute; bottom: 14px; width: 100%; text-align: center; z-index: 20; color: white; font-weight: bold; font-size: 8px; text-shadow: 1px 1px 1px rgba(0,0,0,0.8); white-space: nowrap; pointer-events: none; }
 
-        /* --- 車両ページ(詳細)のデザイン維持 --- */
+        /* --- 個別詳細ページのデザイン --- */
         .section-title { font-size: 16px; font-weight: bold; margin-bottom: 12px; color: var(--text-main); }
         .detail-info-box { padding: 20px; color: var(--text-main); line-height: 1.6; font-size: 14px; }
         .info-row { display: flex; margin-bottom: 5px; }
@@ -132,7 +132,7 @@ function renderTop() {
     systems.forEach(sys => {
         const sysId = `list-${sys.replace(/\s+/g, '')}`;
         const firstData = allData.find(r => r.形式 === sys);
-        const iconName = firstData ? firstData.見出しアイコン : '';
+        const iconName = firstData ? (firstData.見出しアイコン || "") : "";
 
         container.insertAdjacentHTML('beforeend', `
             <div class="system-section" onclick="toggleSection('${sysId}', this)">
@@ -166,21 +166,14 @@ function renderTop() {
                     ${rp ? `<img src="parts/${rp}.png" class="mini-panta mini-panta-r ${rp.startsWith('py') ? 'low-panta' : ''}">` : ''}
                     <div class="mini-car-body" style="background-image: url('body/${c.車体アイコン}.png');"></div>
                     <div class="mini-info-in-body">${ryaku}${lastNo}</div>
-                    ${c.左台車 ? `<img src="parts/${c.左台車}.png" class="mini-bogie mini-bogie-l">` : ''}
-                    ${c.右台車 ? `<img src="parts/${c.右台車}.png" class="mini-bogie mini-bogie-r">` : ''}
+                    ${c.leftBogie ? `<img src="parts/${c.leftBogie}.png" class="mini-bogie mini-bogie-l">` : (c.左台車 ? `<img src="parts/${c.左台車}.png" class="mini-bogie mini-bogie-l">` : '')}
+                    ${c.rightBogie ? `<img src="parts/${c.rightBogie}.png" class="mini-bogie mini-bogie-r">` : (c.右台車 ? `<img src="parts/${c.右台車}.png" class="mini-bogie mini-bogie-r">` : '')}
                 </div>`;
             });
             row.innerHTML = h + `</div>`;
             rows.appendChild(row);
         });
     });
-}
-
-function toggleSection(id, el) {
-    const list = document.getElementById(id);
-    const arrow = el.querySelector('.arrow');
-    const isShow = list.classList.toggle('show');
-    arrow.innerHTML = isShow ? '▲' : '▼';
 }
 
 function renderDetail(name) {
@@ -194,6 +187,7 @@ function renderDetail(name) {
     document.getElementById('info-base').innerText = top.所属基地;
     document.getElementById('info-atacs').innerText = top["ATACS-ID"] || "-";
     document.getElementById('info-stamps').innerHTML = getStampsHTML(top["編成情報(選択)"], 'stamp-icon-large');
+    
     const cCon = document.getElementById('car-details-container');
     cCon.innerHTML = '<div class="section-title">車両情報</div>';
     cars.forEach(c => {
@@ -214,7 +208,33 @@ function renderDetail(name) {
             <div class="car-data-row"><div class="stamp-container">${getStampsHTML(c["車両情報(選択)"],'stamp-small')}</div></div>
         </div>`;
     });
+
+    // 車歴の描画
+    const hList = document.getElementById('history-list');
+    hList.innerHTML = '';
+    // 1～10までの車歴列をチェック
+    for (let i = 1; i <= 10; i++) {
+        const date = top[`車歴${i}(日付)`];
+        if (date) {
+            hList.innerHTML += `
+                <div class="history-item">
+                    <div class="history-top-row">
+                        <div class="history-date">${formatDateJP(date)}</div>
+                        <div class="history-stamps">${getStampsHTML(top[`車歴${i}(選択)`], 'history-stamp')}</div>
+                    </div>
+                    <div style="font-size:13px; color:#333;">${top[`車歴${i}(記述)`] || ""}</div>
+                </div>`;
+        }
+    }
 }
+
+function toggleSection(id, el) {
+    const list = document.getElementById(id);
+    const arrow = el.querySelector('.arrow');
+    const isShow = list.classList.toggle('show');
+    arrow.innerHTML = isShow ? '▲' : '▼';
+}
+
 function showTop() { document.getElementById('top-view').classList.remove('hidden'); document.getElementById('detail-view').classList.add('hidden'); }
 </script>
 </body>
