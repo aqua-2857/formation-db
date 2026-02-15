@@ -17,7 +17,6 @@
         
         .header { background: var(--header-bg); color: white; padding: 15px; display: flex; align-items: center; gap: 10px; font-size: 1.1rem; position: sticky; top: 0; z-index: 100; }
 
-        /* 会社・形式バー */
         .system-section { background: var(--bar-bg); color: white; padding: 12px 15px; display: flex; align-items: center; justify-content: space-between; margin-top: 1px; cursor: pointer; }
         .system-title { display: flex; align-items: center; gap: 10px; font-weight: bold; }
         .system-icon { width: 35px; height: 35px; background: white; border-radius: 4px; object-fit: contain; flex-shrink: 0; }
@@ -26,10 +25,8 @@
         .formation-list-bg { padding: 15px 10px; display: none; }
         .formation-list-bg.show { display: block; }
 
-        /* 路線系統一覧（テキストのみ） */
         .line-sys-row { padding: 15px 5px; cursor: pointer; border-bottom: 1px solid #ccc; font-weight: bold; color: var(--text-main); font-size: 15px; }
 
-        /* 編成表表示 */
         .direction-label { color: var(--sub-gray); font-size: 11px; margin-bottom: 25px; display: flex; justify-content: space-between; font-weight: bold; }
         .formation-row { display: flex; align-items: center; gap: 10px; margin-bottom: 25px; cursor: pointer; }
         .f-name-tag { background: none; color: var(--text-main); font-weight: bold; min-width: 45px; text-align: center; font-size: 14px; flex-shrink: 0; }
@@ -46,19 +43,18 @@
         .mini-car-body { width: 100%; height: 28px; position: absolute; bottom: 10px; z-index: 10; background-size: contain; background-repeat: no-repeat; background-position: bottom; }
         .mini-info-in-body { position: absolute; bottom: 14px; width: 100%; text-align: center; z-index: 20; color: white; font-weight: bold; font-size: 8px; text-shadow: 1px 1px 1px rgba(0,0,0,0.8); white-space: nowrap; pointer-events: none; }
 
-        /* 詳細画面 */
         .section-title { font-size: 16px; font-weight: bold; margin-bottom: 12px; color: var(--text-main); }
         .detail-info-box { padding: 20px; color: var(--text-main); line-height: 1.6; font-size: 14px; }
         .info-row { display: flex; margin-bottom: 5px; }
         .info-label { width: 100px; color: var(--sub-gray); flex-shrink: 0; }
-        .stamp-icon-large { height: 36px; } /* サイズ固定 */
+        .stamp-icon-large { height: 36px; }
         .divider { height: 1px; background-color: var(--sub-gray); margin: 10px 20px; }
         .car-detail-list { padding: 0 20px; }
         .car-unit { display: flex; flex-direction: column; margin-bottom: 45px; }
         .car-visual-row { display: flex; align-items: center; gap: 12px; }
         .car-img-container { position: relative; width: 180px; height: 85px; flex-shrink: 0; }
         .detail-car-body { width: 100%; height: 55px; position: absolute; bottom: 14px; z-index: 10; background-size: contain; background-repeat: no-repeat; background-position: center; }
-        .car-no-inline { position: absolute; top: calc(52% - 3px); left: 50%; transform: translate(-50%, -50%); z-index: 20; color: white; font-size: 14px; font-weight: bold; text-shadow: 1px 1px 2px rgba(0,0,0,1); pointer-events: none; white-space: nowrap; }
+        .car-no-inline { position: absolute; top: calc(52% - 3px); left: 50%; transform: translate(-50%, -50%); z-index: 20; color: white; font-size: 14px; font-weight: bold; text-shadow: 1px 1px 2px rgba(0,0,0,1); white-space: nowrap; }
         .panta-detail { position: absolute; top: -5px; width: 24px; z-index: 5; } 
         .panta-left { left: 25px; }
         .panta-right { right: 25px; }
@@ -68,7 +64,7 @@
         .bogie-right { right: 25px; }
         .car-meta { font-size: 12px; color: #333333; font-weight: bold; flex-grow: 1; line-height: 1.4; }
         .car-data-row { display: flex; align-items: center; gap: 12px; margin-top: 8px; font-size: 13px; color: #333333; }
-        .stamp-small { height: 32px; } /* サイズ固定 */
+        .stamp-small { height: 32px; }
 
         .history-section { border-top: 1px solid var(--sub-gray); margin-top: 20px; padding: 20px; }
         .history-item { margin-bottom: 18px; }
@@ -117,6 +113,7 @@ function formatDateJP(dateStr) {
     if (!dateStr || dateStr === "") return "";
     const p = dateStr.split('/');
     if (p.length === 3) return `${p[0]}年${p[1]}月${p[2]}日`;
+    if (p.length === 2) return `${p[0]}年${p[1]}月`;
     return dateStr;
 }
 
@@ -133,7 +130,6 @@ Papa.parse('data.csv', {
     }
 });
 
-// 1. 会社名アコーディオン
 function renderHome() {
     const container = document.getElementById('accordion-container');
     container.innerHTML = '';
@@ -164,7 +160,6 @@ function renderHome() {
     });
 }
 
-// 2. 系統内・形式別アコーディオン（元の形式バーUI）
 function showFormationList(sysName, comName) {
     currentSystem = sysName;
     currentCompany = comName;
@@ -215,8 +210,8 @@ function showFormationList(sysName, comName) {
                     ${rp ? `<img src="parts/${rp}.png" class="mini-panta mini-panta-r ${rp.startsWith('py') ? 'low-panta' : ''}">` : ''}
                     <div class="mini-car-body" style="background-image: url('body/${c.車体アイコン}.png');"></div>
                     <div class="mini-info-in-body">${c.略号||''}${lastNo}</div>
-                    ${c.leftBogie ? `<img src="parts/${c.leftBogie}.png" class="mini-bogie mini-bogie-l">` : (c.左台車 ? `<img src="parts/${c.左台車}.png" class="mini-bogie mini-bogie-l">` : '')}
-                    ${c.rightBogie ? `<img src="parts/${c.rightBogie}.png" class="mini-bogie mini-bogie-r">` : (c.右台車 ? `<img src="parts/${c.右台車}.png" class="mini-bogie mini-bogie-r">` : '')}
+                    ${c.左台車 ? `<img src="parts/${c.左台車}.png" class="mini-bogie mini-bogie-l">` : ''}
+                    ${c.右台車 ? `<img src="parts/${c.右台車}.png" class="mini-bogie mini-bogie-r">` : ''}
                 </div>`;
             });
             row.innerHTML = h + `</div>`;
@@ -225,7 +220,6 @@ function showFormationList(sysName, comName) {
     });
 }
 
-// 3. 詳細画面（ATACS判定とスタンプサイズ維持）
 function renderDetail(name) {
     document.getElementById('formation-view').classList.add('hidden');
     document.getElementById('detail-view').classList.remove('hidden');
@@ -236,7 +230,6 @@ function renderDetail(name) {
     document.getElementById('info-type').innerText = top.形式;
     document.getElementById('info-base').innerText = top.所属基地;
 
-    // ATACS-IDが空なら非表示
     const atacsRow = document.getElementById('atacs-row');
     if (top["ATACS-ID"] && top["ATACS-ID"].trim() !== "") {
         atacsRow.classList.remove('hidden');
@@ -275,22 +268,36 @@ function renderDetail(name) {
         hList.innerHTML += `<div class="history-item"><div class="history-top-row"><div class="history-date">${formatDateJP(d)}</div><div class="history-stamp-container">${getStampsHTML(s,'history-stamp','history')}</div></div><div class="history-desc">${t}</div></div>`;
     };
 
-    addH(top.落成日, 'rakusei', `${top.製造所 || ''}にて落成。`);
-    addH(top.組成日, 'sosei', `${top.所属基地 || ''}にて組成。`);
+    // --- 落成および新製配置のロジック ---
+    if (top.落成日) {
+        let rakuseiDesc = `${top.製造所 || ''}にて落成。`;
+        
+        // 新製配置情報の判定
+        let sDate = top.甲種輸送日 || top.新製配給日;
+        let sStamp = top.甲種輸送日 ? 'kosyu' : (top.新製配給日 ? 'haikyu' : 'rakusei');
 
-    let sDate = top.甲種輸送日 || top.新製配給日;
-    let sStamp = top.甲種輸送日 ? 'kosyu' : (top.新製配給日 ? 'haikyu' : 'shinsei');
-    if (!sDate && top.新製配置) { sDate = top.落成日; sStamp = 'shinsei'; }
-    if (sDate && top.新製配置) {
-        addH(sDate, sStamp, top["新製(記述)"] || `${top.新製配置}に配置。`);
+        if (top.新製配置) {
+            const shinseiSuffix = `${top["新製(記述)"] || ''}${top.新製配置}に配置。`;
+            rakuseiDesc += shinseiSuffix;
+            
+            // 甲種または配給日があればその日付とスタンプを優先、なければ落成日のまま
+            const finalDate = sDate || top.落成日;
+            const finalStamp = sDate ? sStamp : 'rakusei';
+            addH(finalDate, finalStamp, rakuseiDesc);
+        } else {
+            // 新製配置がない場合は通常の落成のみ
+            addH(top.落成日, 'rakusei', rakuseiDesc);
+        }
     }
 
-    if (top.廃車回送日) addH(top.廃車回送日, 'haikai', (top["廃回(記述)"]||`${top["廃車場所(略称)"]}へ廃車回送。`));
-    addH(top.廃車日, 'haisya', `${top["廃車場所(略称)"] || ''}にて廃車。`);
-    
+    if (top.組成日) addH(top.組成日, 'sosei', `${top.所属基地 || ''}にて組成。`);
+
     for(let i=1; i<=7; i++) {
         addH(top[`車歴${i}(日付)`], top[`車歴${i}(選択)`], top[`車歴${i}(記述)`]);
     }
+
+    if (top.廃車回送日) addH(top.廃車回送日, 'haikai', (top["廃回(記述)"]||`${top["廃車場所(略称)"]}へ廃車回送。`));
+    if (top.廃車日) addH(top.廃車日, 'haisya', `${top["廃車場所(略称)"] || ''}にて廃車。`);
 }
 
 function toggleSection(id, el) {
