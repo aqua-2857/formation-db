@@ -104,8 +104,29 @@
 let allData = [];
 const PANTA_MAP = { '◇': 'p0', '＜': 'p1', '＞': 'p2', '<': 'py1', '>': 'py2' };
 
+// 日付フォーマット関数（ハイフン期間対応）
 function formatDateJP(dateStr) {
     if (!dateStr || dateStr === "") return "";
+    
+    // スラッシュとハイフンの数をカウント
+    const slashCount = (dateStr.match(/\//g) || []).length;
+    const hyphenCount = (dateStr.match(/-/g) || []).length;
+
+    if (hyphenCount === 1) {
+        const parts = dateStr.split('-');
+        const start = parts[0].split('/');
+        const end = parts[1].split('/');
+
+        if (slashCount === 2) {
+            // 例: 2025/10/15-17 -> 2025年10月15日～17日
+            return `${start[0]}年${start[1]}月${start[2]}日～${parts[1]}日`;
+        } else if (slashCount === 3) {
+            // 例: 2025/11/28-12/1 -> 2025年11月28日～12月1日
+            return `${start[0]}年${start[1]}月${start[2]}日～${end[0]}月${end[1]}日`;
+        }
+    }
+
+    // 通常形式
     const p = dateStr.split('/');
     if (p.length === 3) return `${p[0]}年${p[1]}月${p[2]}日`;
     return dateStr;
@@ -209,7 +230,7 @@ function renderDetail(name) {
         </div>`;
     });
 
-    // 車歴の描画（写真のロジック通りに反映）
+    // 車歴の描画（ご提示の自動生成ロジックを完全再現）
     const hList = document.getElementById('history-list');
     hList.innerHTML = '';
     const addH = (d, s, t) => {
@@ -224,7 +245,6 @@ function renderDetail(name) {
     if (top.廃車回送日) addH(top.廃車回送日, 'haikai', (top["廃回(記述)"]||`${top["廃車場所(略称)"]}へ廃車回送。`));
     addH(top.廃車日, 'haisya', `${top["廃車場所(略称)"]}にて廃車。`);
     
-    // 車歴1〜10までをループ処理
     for(let i=1; i<=10; i++) {
         const d = top[`車歴${i}(日付)`];
         const s = top[`車歴${i}(選択)`];
