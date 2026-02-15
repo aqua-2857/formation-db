@@ -15,9 +15,11 @@
 
         body { font-family: sans-serif; background: var(--main-bg); margin: 0; color: var(--text-main); -webkit-tap-highlight-color: transparent; }
         
+        /* ヘッダー */
         .header { background: var(--header-bg); color: white; padding: 15px; display: flex; align-items: center; gap: 10px; font-size: 1.1rem; position: sticky; top: 0; z-index: 100; }
         .header img { height: 22px; filter: brightness(0) invert(1); }
 
+        /* アコーディオンバー */
         .system-section { background: var(--bar-bg); color: white; padding: 12px 15px; display: flex; align-items: center; justify-content: space-between; margin-top: 1px; cursor: pointer; }
         .system-title { display: flex; align-items: center; gap: 10px; font-weight: bold; }
         .system-icon { width: 35px; height: 35px; background: white; border-radius: 4px; object-fit: contain; }
@@ -33,6 +35,8 @@
         
         .car-mini-list { display: flex; gap: 4px; align-items: flex-end; }
         .mini-car-container { position: relative; width: 68px; height: 48px; }
+        
+        /* パンタと車体の位置を大幅に上げ */
         .mini-panta { position: absolute; left: 8px; top: 6px; width: 10px; z-index: 5; }
         .mini-car-body { 
             width: 100%; height: 28px; position: absolute; bottom: 10px; z-index: 10;
@@ -46,16 +50,18 @@
             white-space: nowrap;
         }
 
-        /* --- 個別ページ --- */
+        /* --- 個別詳細ページ --- */
         .section-title { font-size: 16px; font-weight: bold; margin-bottom: 12px; color: var(--text-main); }
         .detail-info-box { padding: 20px; color: var(--text-main); line-height: 1.6; font-size: 14px; }
         .info-row { display: flex; margin-bottom: 5px; }
         .info-label { width: 100px; color: var(--sub-gray); flex-shrink: 0; }
         
+        /* 編成スタンプサイズ */
         .stamp-icon-large { height: 36px; margin-right: 10px; vertical-align: middle; }
 
         .divider { height: 1px; background-color: var(--sub-gray); margin: 10px 20px; }
 
+        /* 車両情報（コンパクト化） */
         .car-detail-list { padding: 0 20px; }
         .car-unit { display: flex; flex-direction: column; margin-bottom: 45px; }
         .car-visual-row { display: flex; align-items: center; gap: 12px; }
@@ -80,27 +86,14 @@
         .bogie-left { left: 25px; }
         .bogie-right { right: 25px; }
         
-        /* 製造所と日付：指定カラー #333333 に変更 */
-        .car-meta { 
-            font-size: 12px; 
-            color: #333333; 
-            font-weight: bold; 
-            flex-grow: 1; 
-            line-height: 1.4;
-        }
+        /* テキスト：#333333 に統一 */
+        .car-meta { font-size: 12px; color: #333333; font-weight: bold; flex-grow: 1; line-height: 1.4; }
         .car-meta div { white-space: nowrap; }
 
-        /* 車両情報の記述エリア：指定カラー #333333 に変更 */
-        .car-data-row { 
-            display: flex; 
-            align-items: center; 
-            gap: 12px; 
-            margin-top: 8px; 
-            font-size: 13px; 
-            color: #333333;
-        }
+        .car-data-row { display: flex; align-items: center; gap: 12px; margin-top: 8px; font-size: 13px; color: #333333; }
         .stamp-small { height: 32px; }
 
+        /* 車歴セクション */
         .history-section { border-top: 1px solid var(--sub-gray); margin-top: 20px; padding: 20px; }
         .history-item { margin-bottom: 18px; }
         .history-top-row { display: flex; align-items: center; gap: 10px; margin-bottom: 5px; }
@@ -148,14 +141,12 @@
 let allData = [];
 const PANTA_MAP = { '◇': 'p0', '＜': 'p1', '＞': 'p2', '<': 'py1', '>': 'py2' };
 
+// 日付変換ロジック
 function formatDateJP(dateStr) {
     if (!dateStr || dateStr === "") return "";
     const parts = dateStr.split('/');
-    if (parts.length === 3) {
-        return `${parts[0]}年${parts[1]}月${parts[2]}日`;
-    } else if (parts.length === 2) {
-        return `${parts[0]}年${parts[1]}月`;
-    }
+    if (parts.length === 3) return `${parts[0]}年${parts[1]}月${parts[2]}日`;
+    if (parts.length === 2) return `${parts[0]}年${parts[1]}月`;
     return dateStr;
 }
 
