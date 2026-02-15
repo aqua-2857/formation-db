@@ -113,4 +113,156 @@
         <div id="info-stamps" style="margin-top:12px; display:flex; align-items:center; gap:8px;"></div>
     </div>
     <div class="divider"></div>
-    <div class="car-detail
+    <div class="car-detail-list"><div class="section-title">車両情報</div><div id="car-details-container"></div></div>
+    <div class="history-section"><div class="section-title">車歴</div><div id="history-list"></div></div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
+<script>
+let allData = [];
+const PANTA_MAP = { '◇': 'p0', '＜': 'p1', '＞': 'p2', '<': 'py1', '>': 'py2' };
+
+// 日付変換（範囲指定対応）
+function formatDateJP(dateStr) {
+    if (!dateStr || dateStr === "") return "";
+    if (dateStr.includes('-')) {
+        const parts = dateStr.split('-');
+        const start = parts[0].split('/');
+        const end = parts[1].split('/');
+        if (start.length === 3) {
+            let res = `${start[0]}年${start[1]}月${start[2]}日`;
+            if (end.length === 1) return res + `~${end[0]}日`;
+            if (end.length === 2) return res + `~${end[0]}月${end[1]}日`;
+        }
+    }
+    const p = dateStr.split('/');
+    if (p.length === 3) return `${p[0]}年${p[1]}月${p[2]}日`;
+    if (p.length === 2) return `${p[0]}年${p[1]}月`;
+    return dateStr;
+}
+
+// スタンプ（複数対応）
+function getStampsHTML(stampStr, className, folder = 'stamp') {
+    if (!stampStr) return '';
+    return stampStr.split(',').map(s => {
+        const n = s.trim(); if (!n) return '';
+        return `<img src="${folder}/${n}.png" class="${className}" onerror="this.style.display='none'">`;
+    }).join('');
+}
+
+// 車体表示ハイブリッド
+function getBodyStyle(c) {
+    if (c.車体色 && c.車体色.trim() !== "") {
+        return `background-color:${c.車体色}; -webkit-mask-image: url('body/${c.車体アイコン}.png'); mask-image: url('body/${c.車体アイコン}.png');`;
+    } else {
+        return `background-image: url('body/${c.車体アイコン}.png'); -webkit-mask-image: none; mask-image: none;`;
+    }
+}
+
+Papa.parse('data.csv', {
+    download: true, header: true, skipEmptyLines: 'greedy',
+    complete: function(results) {
+        allData = results.data.filter(r => r.編成名 && r.編成名.trim() !== "");
+        renderTop();
+    }
+});
+
+function getRyaku(vNo) {
+    if (vNo.includes('クモハ')) return "Mc"; if (vNo.includes('クハ')) return "Tc'";
+    if (vNo.includes('モハ')) return "M'"; if (vNo.includes('サハ')) return "T";
+    return "";
+}
+
+function renderTop() {
+    const container = document.getElementById('accordion-container');
+    container.innerHTML = '';
+    const systems = [...new Set(allData.map(r => r.形式))];
+    systems.forEach(sys => {
+        const isE131 = sys.includes('E131');
+        const sysId = `list-${sys.replace(/\s+/g, '')}`;
+        container.insertAdjacentHTML('beforeend', `
+            <div class="system-section" onclick="toggleSection('${sysId}', this)">
+                <div class="system-title"><img src="icon/b1.png" class="system-icon"> ${sys}</div>
+                <div class="arrow ${isE131?'open':''}">${isE131?'▲':'▼'}</div>
+            </div>
+            <div id="${sysId}" class="formation-list-bg ${isE131?'show':''}">
+                <div class="direction-label"><span>◀︎あおば通・仙台</span><span>石巻▶︎</span></div>
+                <div class="rows-container"></div>
+            </div>`);
+        const rows = container.querySelector(`#${sysId} .rows-container`);
+        const names = [...new Set(allData.filter(r => r.形式 === sys).map(r => r.編成名))];
+        names.forEach(name => {
+            const cars = allData.filter(r => r.編成名 === name).sort((a,b) => a.号車 - b.号車);
+            const row = document.createElement('div');
+            row.className = 'formation-row';
+            row.onclick = () => renderDetail(name);
+            let h = `<div class="f-name-tag">${name}</div><div class="car-mini-list">`;
+            cars.forEach(c => {
+                const no = c.車両番号.split('-').pop();
+                const pKey = c.左パンタ || c.右パンタ;
+                h += `<div class="mini-car-container">
+                    ${pKey?`<img src="body/${PANTA_MAP[pKey]||'p1'}.png" class="mini-panta">`:''}
+                    <div class="mini-car-body" style="${getBodyStyle(c)}"></div>
+                    <div class="mini-info-in-body">${getRyaku(c.車両番号)}${no}</div>
+                </div>`;
+            });
+            row.innerHTML = h + `</div>`;
+            rows.appendChild(row);
+        });
+    });
+}
+
+function toggleSection(id, el) {
+    const list = document.getElementById(id);
+    const arrow = el.querySelector('.arrow');
+    list.classList.toggle('show');
+    arrow.innerHTML = list.classList.contains('show') ? '▲' : '▼';
+}
+
+function renderDetail(name) {
+    document.getElementById('top-view').classList.add('hidden');
+    document.getElementById('detail-view').classList.remove('hidden');
+    window.scrollTo(0,0);
+    const cars = allData.filter(r => r.編成名 === name).sort((a,b) => a.号車 - b.号車);
+    const top = cars[0];
+    document.getElementById('detail-title-name').innerText = name + "編成";
+    document.getElementById('info-type').innerText = `${top.形式}${top.番台}`;
+    document.getElementById('info-base').innerText = top.所属基地;
+    document.getElementById('info-atacs').innerText = top["ATACS-ID"] || "-";
+    document.getElementById('info-stamps').innerHTML = getStampsHTML(top["編成情報(選択)"], 'stamp-icon-large') + `<span>${top["編成情報(記述)"]||''}</span>`;
+    const cCon = document.getElementById('car-details-container');
+    cCon.innerHTML = '';
+    cars.forEach(c => {
+        cCon.innerHTML += `<div class="car-unit">
+            <div class="car-visual-row">
+                <div class="car-img-container">
+                    ${c.左パンタ?`<img src="body/${PANTA_MAP[c.左パンタ]||'p1'}.png" class="panta-detail panta-left">`:''}
+                    ${c.rightパンタ||c.右パンタ?`<img src="body/${PANTA_MAP[c.右パンタ]||'p1'}.png" class="panta-detail panta-right">`:''}
+                    <div class="detail-car-body" style="${getBodyStyle(c)}"></div>
+                    <div class="car-no-inline">${c.車両番号}</div>
+                    ${c.左台車?`<img src="body/${c.左台車}.png" class="bogie bogie-left">`:''}
+                    ${c.右台車?`<img src="body/${c.右台車}.png" class="bogie bogie-right">`:''}
+                </div>
+                <div class="car-meta"><div>${c.製造所}</div><div>${formatDateJP(c.落成日)}</div></div>
+            </div>
+            <div class="car-data-row"><div class="stamp-container">${getStampsHTML(c["車両情報(選択)"],'stamp-small')}</div><span>${c["車両情報(記述)"]||''}</span></div>
+        </div>`;
+    });
+    const hList = document.getElementById('history-list');
+    hList.innerHTML = '';
+    const addH = (d, s, t) => {
+        if (!d) return;
+        hList.innerHTML += `<div class="history-item"><div class="history-top-row"><div class="history-date">${formatDateJP(d)}</div><div class="history-stamp-container">${getStampsHTML(s,'history-stamp','history')}</div></div><div class="history-desc">${t}</div></div>`;
+    };
+    addH(top.落成日, 'rakusei', `${top.製造所}にて落成。`);
+    addH(top.組成日, 'sosei', `${top.所属基地}にて組成。`);
+    if (top.甲種輸送日) addH(top.甲種輸送日, 'kosyu', `${top.新製配置}に配置。`);
+    else if (top.新製配給日) addH(top.新製配給日, 'haikyu', `${top.新製配置}に配置。`);
+    if (top.廃車回送日) addH(top.廃車回送日, 'haikai', (top["廃回(記述)"]||`${top["廃車場所(略称)"]}へ廃車回送。`));
+    addH(top.廃車日, 'haisya', `${top["廃車場所(略称)"]}にて廃車。`);
+    for(let i=1; i<=2; i++) if(top[`車歴${i}(日付)`]) addH(top[`車歴${i}(日付)`], top[`車歴${i}(選択)`], top[`車歴${i}(記述)`]);
+}
+function showTop() { document.getElementById('top-view').classList.remove('hidden'); document.getElementById('detail-view').classList.add('hidden'); }
+</script>
+</body>
+</html>
