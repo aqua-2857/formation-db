@@ -89,7 +89,7 @@
 </div>
 
 <div id="detail-view" class="hidden">
-    <div class="header" onclick="showFormation()" style="cursor:pointer;">◀ 編成詳細</div>
+    <div class="header" onclick="showFormation()" style="cursor:pointer;">◀ <span id="detail-header-title">編成名</span></div>
     <div class="detail-info-box">
         <div class="section-title">編成情報</div>
         <div class="info-row"><span class="info-label">車両形式</span> <span id="info-type"></span></div>
@@ -227,7 +227,8 @@ function renderDetail(name) {
     const cars = allData.filter(r => r.編成名 === name && r.路線系統 === currentSystem && r.会社名 === currentCompany).sort((a,b) => a.号車 - b.号車);
     const top = cars[0];
 
-    document.getElementById('info-type').innerText = top.形式;
+    document.getElementById('detail-header-title').innerText = name;
+    document.getElementById('info-type').innerText = `${top.形式} ${top.番台 || ''}`.trim();
     document.getElementById('info-base').innerText = top.所属基地;
 
     const atacsRow = document.getElementById('atacs-row');
@@ -268,26 +269,26 @@ function renderDetail(name) {
         hList.innerHTML += `<div class="history-item"><div class="history-top-row"><div class="history-date">${formatDateJP(d)}</div><div class="history-stamp-container">${getStampsHTML(s,'history-stamp','history')}</div></div><div class="history-desc">${t}</div></div>`;
     };
 
-    // --- 落成および新製配置のロジック ---
-    if (top.落成日) {
-        let rakuseiDesc = `${top.製造所 || ''}にて落成。`;
-        
-        // 新製配置情報の判定
-        let sDate = top.甲種輸送日 || top.新製配給日;
-        let sStamp = top.甲種輸送日 ? 'kosyu' : (top.新製配給日 ? 'haikyu' : 'rakusei');
+    // --- 車歴ロジック ---
+    const shinseiText = `${top["新製(記述)"] || ''}${top.新製配置 || ''}に配置。`;
 
-        if (top.新製配置) {
-            const shinseiSuffix = `${top["新製(記述)"] || ''}${top.新製配置}に配置。`;
-            rakuseiDesc += shinseiSuffix;
-            
-            // 甲種または配給日があればその日付とスタンプを優先、なければ落成日のまま
-            const finalDate = sDate || top.落成日;
-            const finalStamp = sDate ? sStamp : 'rakusei';
-            addH(finalDate, finalStamp, rakuseiDesc);
-        } else {
-            // 新製配置がない場合は通常の落成のみ
-            addH(top.落成日, 'rakusei', rakuseiDesc);
+    // 1. 落成
+    if (top.落成日) {
+        let rakuseiBody = `${top.製造所 || ''}にて落成。`;
+        // 甲種も配給もない場合のみ、落成の本文に新製配置を追記
+        if (!top.甲種輸送日 && !top.新製配給日 && top.新製配置) {
+            rakuseiBody += shinseiText;
         }
+        addH(top.落成日, 'rakusei', rakuseiBody);
+    }
+
+    // 2. 甲種輸送
+    if (top.甲種輸送日) {
+        addH(top.甲種輸送日, 'kosyu', shinseiText);
+    } 
+    // 3. 新製配給 (甲種がなく、配給がある場合。または独立表示)
+    else if (top.新製配給日) {
+        addH(top.新製配給日, 'haikyu', shinseiText);
     }
 
     if (top.組成日) addH(top.組成日, 'sosei', `${top.所属基地 || ''}にて組成。`);
