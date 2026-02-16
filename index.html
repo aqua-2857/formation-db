@@ -38,8 +38,8 @@
         .mini-panta { position: absolute; width: 10px; z-index: 5; top: 6px; }
         .mini-panta-l { left: 8px; }
         .mini-panta-r { right: 8px; }
-        /* 菱形パンタ(p0)のみ2倍サイズ & 位置調整 */
-        .mini-panta.panta-p0 { width: 20px; top: -4px; }
+        /* 菱形パンタ(p0)のみ2倍サイズ & 下へ画像1枚分(約30px)下げる */
+        .mini-panta.panta-p0 { width: 20px; top: 26px; } 
         .mini-panta-l.panta-p0 { left: 3px; }
         .mini-panta-r.panta-p0 { right: 3px; }
         
@@ -48,7 +48,9 @@
         .mini-bogie-l { left: 8px; }
         .mini-bogie-r { right: 8px; }
         .mini-car-body { width: 100%; height: 28px; position: absolute; bottom: 10px; z-index: 10; background-size: contain; background-repeat: no-repeat; background-position: bottom; }
-        .mini-info-in-body { position: absolute; bottom: 14px; width: 100%; text-align: center; z-index: 20; color: white; font-weight: bold; font-size: 8px; text-shadow: 1px 1px 1px rgba(0,0,0,0.8); white-space: nowrap; pointer-events: none; }
+        
+        /* 略号、車番の文字を4px上げる */
+        .mini-info-in-body { position: absolute; bottom: 18px; width: 100%; text-align: center; z-index: 20; color: white; font-weight: bold; font-size: 8px; text-shadow: 1px 1px 1px rgba(0,0,0,0.8); white-space: nowrap; pointer-events: none; }
 
         .section-title { font-size: 16px; font-weight: bold; margin-bottom: 12px; color: var(--text-main); }
         .detail-info-box { padding: 20px; color: var(--text-main); line-height: 1.6; font-size: 14px; }
@@ -67,8 +69,8 @@
         .panta-detail { position: absolute; top: -5px; width: 24px; z-index: 5; } 
         .panta-left { left: 25px; }
         .panta-right { right: 25px; }
-        /* 菱形パンタ(p0)のみ2倍サイズ & 位置調整 */
-        .panta-detail.panta-p0 { width: 48px; top: -29px; }
+        /* 菱形パンタ(p0)のみ2倍サイズ & 下へ画像1枚分(約30px以上)下げる */
+        .panta-detail.panta-p0 { width: 48px; top: 25px; }
         .panta-left.panta-p0 { left: 13px; }
         .panta-right.panta-p0 { right: 13px; }
         
