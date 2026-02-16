@@ -39,8 +39,8 @@
         .mini-panta-l { left: 8px; }
         .mini-panta-r { right: 8px; }
         
-        /* 菱形(p0)のみサイズ2倍 & 位置調整（足元の高さを揃える） */
-        .mini-panta.panta-p0 { width: 20px; top: -4px; }
+        /* 菱形(p0) サイズ2倍 & 位置を画像1枚分下げ */
+        .mini-panta.panta-p0 { width: 20px; top: 6px; }
         .mini-panta-l.panta-p0 { left: 3px; }
         .mini-panta-r.panta-p0 { right: 3px; }
         
@@ -72,8 +72,8 @@
         .panta-left { left: 25px; }
         .panta-right { right: 25px; }
 
-        /* 菱形(p0)のみサイズ2倍 & 位置調整（足元の高さを揃える） */
-        .panta-detail.panta-p0 { width: 48px; top: -29px; }
+        /* 菱形(p0) サイズ2倍 & 位置を画像1枚分下げ */
+        .panta-detail.panta-p0 { width: 48px; top: -5px; }
         .panta-left.panta-p0 { left: 13px; }
         .panta-right.panta-p0 { right: 13px; }
         
@@ -250,7 +250,7 @@ function showFormationList(sysName, comName) {
                     <div class="mini-car-body" style="background-image: url('body/${c.車体アイコン}.png');"></div>
                     <div class="mini-info-in-body">${c.略号||''}${lastNo}</div>
                     ${c.左台車 ? `<img src="parts/${c.左台車}.png" class="mini-bogie mini-bogie-l">` : ''}
-                    ${c.右台車 ? `<img src="parts/${c.右台車}.png" class="mini-bogie mini-bogie-r">` : ''}
+                    ${c.rightBogie ? `<img src="parts/${c.右台車}.png" class="mini-bogie mini-bogie-r">` : ''}
                 </div>`;
             });
             row.innerHTML = h + `</div>`;
