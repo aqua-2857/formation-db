@@ -206,18 +206,21 @@ function showFormationList(sysName, comName) {
     const fContainer = document.getElementById('formation-accordion-container');
     fContainer.innerHTML = '';
     const sysData = allData.filter(r => r.路線系統 === sysName && r.会社名 === comName);
-    const forms = [...new Set(sysData.map(r => r.形式))];
 
-    forms.forEach(form => {
-        const formId = `form-${form.replace(/\s+/g, '')}`;
-        const formData = sysData.filter(r => r.形式 === form);
+    // 形式名と見出しアイコンの組み合わせでユニークなキーを作成
+    const formKeys = [...new Set(sysData.map(r => `${r.形式}|${r.見出しアイコン || ''}`))];
+
+    formKeys.forEach((key, index) => {
+        const [formName, iconName] = key.split('|');
+        const formId = `form-${index}-${formName.replace(/\s+/g, '')}`;
+        const formData = sysData.filter(r => r.形式 === formName && (r.見出しアイコン || '') === iconName);
         const first = formData[0];
 
         fContainer.insertAdjacentHTML('beforeend', `
             <div class="system-section" onclick="toggleSection('${formId}', this)">
                 <div class="system-title">
-                    ${first.見出しアイコン ? `<img src="icon/${first.見出しアイコン}.png" class="system-icon">` : ''}
-                    ${form}
+                    ${iconName ? `<img src="icon/${iconName}.png" class="system-icon">` : ''}
+                    ${formName}
                 </div>
                 <div class="arrow">▼</div>
             </div>
