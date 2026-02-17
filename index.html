@@ -51,7 +51,6 @@
         .mini-bogie-r { right: 8px; }
         .mini-car-body { width: 100%; height: 28px; position: absolute; bottom: 10px; z-index: 10; background-size: contain; background-repeat: no-repeat; background-position: bottom; }
         
-        /* 文字位置を4px上げ */
         .mini-info-in-body { position: absolute; bottom: 18px; width: 100%; text-align: center; z-index: 20; color: white; font-weight: bold; font-size: 8px; text-shadow: 1px 1px 1px rgba(0,0,0,0.8); white-space: nowrap; pointer-events: none; }
 
         .section-title { font-size: 16px; font-weight: bold; margin-bottom: 12px; color: var(--text-main); }
@@ -59,8 +58,8 @@
         .info-row { display: flex; margin-bottom: 5px; }
         .info-label { width: 100px; color: var(--sub-gray); flex-shrink: 0; }
         
-        /* 編成情報スタンプを小型化（24px） */
-        .stamp-icon-large { height: 24px; }
+        /* 編成情報スタンプを車両情報と同じ32pxに設定 */
+        .stamp-icon-large { height: 32px; }
         
         .divider { height: 1px; background-color: var(--sub-gray); margin: 10px 20px; }
         .car-detail-list { padding: 0 20px; }
@@ -314,30 +313,3 @@ function renderDetail(name) {
         if (!top.甲種輸送日 && !top.新製配給日 && top.新製配置) rakuseiBody += shinseiText;
         addH(top.落成日, 'rakusei', rakuseiBody);
     }
-    if (top.甲種輸送日) addH(top.甲種輸送日, 'kosyu', shinseiText);
-    if (top.新製配給日) addH(top.新製配給日, 'haikyu', shinseiText);
-    if (top.組成日) addH(top.組成日, 'sosei', `${top.所属基地 || ''}にて組成。`);
-    for(let i=1; i<=7; i++) addH(top[`車歴${i}(日付)`], top[`車歴${i}(選択)`], top[`車歴${i}(記述)`]);
-    if (top.廃車回送日) addH(top.廃車回送日, 'haikai', (top["廃回(記述)"]||`${top["廃車場所(略称)"]}へ廃車回送。`));
-    if (top.廃車日) addH(top.廃車日, 'haisya', `${top["廃車場所(略称)"] || ''}にて廃車。`);
-}
-
-function toggleSection(id, el) {
-    const list = document.getElementById(id);
-    const isShow = list.classList.toggle('show');
-    el.querySelector('.arrow').innerText = isShow ? '▲' : '▼';
-}
-
-function showHome() {
-    document.getElementById('home-view').classList.remove('hidden');
-    document.getElementById('formation-view').classList.add('hidden');
-    document.getElementById('detail-view').classList.add('hidden');
-}
-
-function showFormation() {
-    document.getElementById('formation-view').classList.remove('hidden');
-    document.getElementById('detail-view').classList.add('hidden');
-}
-</script>
-</body>
-</html>
