@@ -38,8 +38,6 @@
         .mini-panta { position: absolute; width: 10px; z-index: 5; top: 6px; }
         .mini-panta-l { left: 8px; }
         .mini-panta-r { right: 8px; }
-        
-        /* 菱形(p0) サイズ2倍 & 位置調整 */
         .mini-panta.panta-p0 { width: 20px; top: 6px; }
         .mini-panta-l.panta-p0 { left: 3px; }
         .mini-panta-r.panta-p0 { right: 3px; }
@@ -58,7 +56,6 @@
         .info-row { display: flex; margin-bottom: 5px; }
         .info-label { width: 100px; color: var(--sub-gray); flex-shrink: 0; }
         
-        /* 編成情報スタンプを車両情報と同じ32pxに設定 */
         .stamp-icon-large { height: 32px; }
         
         .divider { height: 1px; background-color: var(--sub-gray); margin: 10px 20px; }
@@ -313,3 +310,30 @@ function renderDetail(name) {
         if (!top.甲種輸送日 && !top.新製配給日 && top.新製配置) rakuseiBody += shinseiText;
         addH(top.落成日, 'rakusei', rakuseiBody);
     }
+    if (top.甲種輸送日) addH(top.甲種輸送日, 'kosyu', shinseiText);
+    if (top.新製配給日) addH(top.新製配給日, 'haikyu', shinseiText);
+    if (top.組成日) addH(top.組成日, 'sosei', `${top.所属基地 || ''}にて組成。`);
+    for(let i=1; i<=7; i++) addH(top[`車歴${i}(日付)`], top[`車歴${i}(選択)`], top[`車歴${i}(記述)`]);
+    if (top.廃車回送日) addH(top.廃車回送日, 'haikai', (top["廃回(記述)"]||`${top["廃車場所(略称)"]}へ廃車回送。`));
+    if (top.廃車日) addH(top.廃車日, 'haisya', `${top["廃車場所(略称)"] || ''}にて廃車。`);
+}
+
+function toggleSection(id, el) {
+    const list = document.getElementById(id);
+    const isShow = list.classList.toggle('show');
+    el.querySelector('.arrow').innerText = isShow ? '▲' : '▼';
+}
+
+function showHome() {
+    document.getElementById('home-view').classList.remove('hidden');
+    document.getElementById('formation-view').classList.add('hidden');
+    document.getElementById('detail-view').classList.add('hidden');
+}
+
+function showFormation() {
+    document.getElementById('formation-view').classList.remove('hidden');
+    document.getElementById('detail-view').classList.add('hidden');
+}
+</script>
+</body>
+</html>
