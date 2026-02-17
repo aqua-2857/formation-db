@@ -34,14 +34,12 @@
         .car-mini-list { display: flex; gap: 4px; align-items: flex-end; }
         .mini-car-container { position: relative; width: 68px; height: 48px; }
         
-        /* --- 編成表ミニパンタ設定 --- */
         .mini-panta { position: absolute; width: 10px; z-index: 5; top: 6px; }
         .mini-panta-l { left: 8px; }
         .mini-panta-r { right: 8px; }
         .mini-panta.panta-p0 { width: 20px; top: 6px; }
         .mini-panta-l.panta-p0 { left: 3px; }
         .mini-panta-r.panta-p0 { right: 3px; }
-        
         .mini-panta.low-panta { top: 11px; } 
 
         .mini-bogie { position: absolute; width: 16px; z-index: 5; bottom: 6px; }
@@ -55,7 +53,6 @@
         .detail-info-box { padding: 20px; color: var(--text-main); line-height: 1.6; font-size: 14px; }
         .info-row { display: flex; margin-bottom: 5px; }
         .info-label { width: 100px; color: var(--sub-gray); flex-shrink: 0; }
-        
         .stamp-icon-large { height: 32px; }
         
         .divider { height: 1px; background-color: var(--sub-gray); margin: 10px 20px; }
@@ -66,7 +63,6 @@
         .detail-car-body { width: 100%; height: 55px; position: absolute; bottom: 14px; z-index: 10; background-size: contain; background-repeat: no-repeat; background-position: center; }
         .car-no-inline { position: absolute; top: calc(52% - 3px); left: 50%; transform: translate(-50%, -50%); z-index: 20; color: white; font-size: 14px; font-weight: bold; text-shadow: 1px 1px 2px rgba(0,0,0,1); white-space: nowrap; }
         
-        /* --- 詳細画面パンタ設定 --- */
         .panta-detail { position: absolute; top: -5px; width: 24px; z-index: 5; } 
         .panta-left { left: 25px; }
         .panta-right { right: 25px; }
@@ -206,8 +202,6 @@ function showFormationList(sysName, comName) {
     const fContainer = document.getElementById('formation-accordion-container');
     fContainer.innerHTML = '';
     const sysData = allData.filter(r => r.路線系統 === sysName && r.会社名 === comName);
-
-    // 形式名と見出しアイコンの組み合わせでユニークなキーを作成
     const formKeys = [...new Set(sysData.map(r => `${r.形式}|${r.見出しアイコン || ''}`))];
 
     formKeys.forEach((key, index) => {
@@ -302,23 +296,64 @@ function renderDetail(name) {
 
     const hList = document.getElementById('history-list');
     hList.innerHTML = '';
-    const addH = (d, s, t) => {
-        if (!d || !t) return;
-        hList.innerHTML += `<div class="history-item"><div class="history-top-row"><div class="history-date">${formatDateJP(d)}</div><div class="history-stamp-container">${getStampsHTML(s,'history-stamp','history')}</div></div><div class="history-desc">${t}</div></div>`;
+
+    // --- 車歴集計ロジック ---
+    const events = [];
+    const carCount = cars.length;
+
+    const pushEvent = (carNo, date, stamp, text) => {
+        if (!date || !text) return;
+        const key = `${date}|${stamp}|${text}`;
+        let ev = events.find(e => e.key === key);
+        if (!ev) {
+            ev = { key, date, stamp, text, carNos: [] };
+            events.push(ev);
+        }
+        ev.carNos.push(carNo);
     };
 
-    const shinseiText = `${top["新製(記述)"] || ''}${top.新製配置 || ''}に配置。`;
-    if (top.落成日) {
-        let rakuseiBody = `${top.製造所 || ''}にて落成。`;
-        if (!top.甲種輸送日 && !top.新製配給日 && top.新製配置) rakuseiBody += shinseiText;
-        addH(top.落成日, 'rakusei', rakuseiBody);
-    }
-    if (top.甲種輸送日) addH(top.甲種輸送日, 'kosyu', shinseiText);
-    if (top.新製配給日) addH(top.新製配給日, 'haikyu', shinseiText);
-    if (top.組成日) addH(top.組成日, 'sosei', `${top.所属基地 || ''}にて組成。`);
-    for(let i=1; i<=7; i++) addH(top[`車歴${i}(日付)`], top[`車歴${i}(選択)`], top[`車歴${i}(記述)`]);
-    if (top.廃車回送日) addH(top.廃車回送日, 'haikai', (top["廃回(記述)"]||`${top["廃車場所(略称)"]}へ廃車回送。`));
-    if (top.廃車日) addH(top.廃車日, 'haisya', `${top["廃車場所(略称)"] || ''}にて廃車。`);
+    cars.forEach(c => {
+        const shinseiText = `${c["新製(記述)"] || ''}${c.新製配置 || ''}に配置。`;
+        if (c.落成日) {
+            let rakuseiBody = `${c.製造所 || ''}にて落成。`;
+            if (!c.甲種輸送日 && !c.新製配給日 && c.新製配置) rakuseiBody += shinseiText;
+            pushEvent(c.車両番号, c.落成日, 'rakusei', rakuseiBody);
+        }
+        if (c.甲種輸送日) pushEvent(c.車両番号, c.甲種輸送日, 'kosyu', shinseiText);
+        if (c.新製配給日) pushEvent(c.車両番号, c.新製配給日, 'haikyu', shinseiText);
+        
+        // 組成の記述を修正
+        if (c.組成日) {
+            const soseiBody = `${c.組成場所 || ''}にて組成し、${c.所属基地 || ''}に配置。`;
+            pushEvent(c.車両番号, c.組成日, 'sosei', soseiBody);
+        }
+
+        for(let i=1; i<=7; i++) {
+            pushEvent(c.車両番号, c[`車歴${i}(日付)`], c[`車歴${i}(選択)`], c[`車歴${i}(記述)`]);
+        }
+        if (c.廃車回送日) pushEvent(c.車両番号, c.廃車回送日, 'haikai', (c["廃回(記述)"]||`${c["廃車場所(略称)"]}へ廃車回送。`));
+        if (c.廃車日) pushEvent(c.車両番号, c.廃車日, 'haisya', `${c["廃車場所(略称)"] || ''}にて廃車。`);
+    });
+
+    // 日付順にソートして描画
+    events.sort((a, b) => {
+        const ad = a.date.replace(/\//g,'');
+        const bd = b.date.replace(/\//g,'');
+        return ad.localeCompare(bd);
+    }).forEach(ev => {
+        // 全車両一致でない場合のみ車番を追記
+        const suffix = (ev.carNos.length === carCount) ? "" : ` (${ev.carNos.join(', ')})`;
+        const finalDesc = ev.text + suffix;
+        
+        hList.innerHTML += `
+            <div class="history-item">
+                <div class="history-top-row">
+                    <div class="history-date">${formatDateJP(ev.date)}</div>
+                    <div class="history-stamp-container">${getStampsHTML(ev.stamp, 'history-stamp', 'history')}</div>
+                </div>
+                <div class="history-desc">${finalDesc}</div>
+            </div>`;
+    });
 }
 
 function toggleSection(id, el) {
