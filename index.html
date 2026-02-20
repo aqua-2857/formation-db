@@ -116,7 +116,10 @@
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
 <script>
-let allData = [];
+let formationData = [];
+let carIdData = [];
+let historyData = [];
+
 let currentSystem = "";
 let currentCompany = "";
 const PANTA_MAP = { '◇': 'p0', '＜': 'p1', '＞': 'p2', '<': 'py1', '>': 'py2' };
@@ -156,18 +159,35 @@ function getStampsHTML(stampStr, className, folder = 'stamp') {
     return stampStr.split(',').map(s => `<img src="${folder}/${s.trim()}.png" class="${className}" onerror="this.style.display='none'">`).join('');
 }
 
-Papa.parse('data.csv', {
-    download: true, header: true, skipEmptyLines: 'greedy', 
-    complete: function(results) {
-        allData = results.data.filter(r => r.会社名 && r.会社名.trim() !== "");
-        renderHome();
-    }
-});
+// 複数のCSVを順次読み込み
+function loadAllCSV() {
+    const files = [
+        { name: 'formation.csv', setter: (d) => formationData = d },
+        { name: 'car_id.csv', setter: (d) => carIdData = d },
+        { name: 'history.csv', setter: (d) => historyData = d }
+    ];
+
+    let loadedCount = 0;
+    files.forEach(file => {
+        Papa.parse(file.name, {
+            download: true, header: true, skipEmptyLines: 'greedy',
+            complete: function(results) {
+                file.setter(results.data);
+                loadedCount++;
+                if (loadedCount === files.length) {
+                    renderHome();
+                }
+            }
+        });
+    });
+}
+
+loadAllCSV();
 
 function renderHome() {
     const container = document.getElementById('accordion-container');
     container.innerHTML = '';
-    const companies = [...new Set(allData.map(r => r.会社名))];
+    const companies = [...new Set(formationData.map(r => r.会社名).filter(v => v))];
     companies.forEach(com => {
         const comId = `com-${com.replace(/\s+/g, '')}`;
         container.insertAdjacentHTML('beforeend', `
@@ -179,7 +199,7 @@ function renderHome() {
                 <div class="rows-container"></div>
             </div>`);
         const rowsContainer = container.querySelector(`#${comId} .rows-container`);
-        const comData = allData.filter(r => r.会社名 === com);
+        const comData = formationData.filter(r => r.会社名 === com);
         const systems = [...new Set(comData.map(r => r.路線系統))];
         systems.forEach(sys => {
             const row = document.createElement('div');
@@ -201,7 +221,7 @@ function showFormationList(sysName, comName) {
 
     const fContainer = document.getElementById('formation-accordion-container');
     fContainer.innerHTML = '';
-    const sysData = allData.filter(r => r.路線系統 === sysName && r.会社名 === comName);
+    const sysData = formationData.filter(r => r.路線系統 === sysName && r.会社名 === comName);
     const formKeys = [...new Set(sysData.map(r => `${r.形式}|${r.見出しアイコン || ''}`))];
 
     formKeys.forEach((key, index) => {
@@ -227,7 +247,7 @@ function showFormationList(sysName, comName) {
         const names = [...new Set(formData.map(r => r.編成名))];
 
         names.forEach(name => {
-            const cars = formData.filter(r => r.編成名 === name).sort((a,b) => a.号車 - b.号車);
+            const cars = formData.filter(r => r.編成名 === name).sort((a,b) => parseInt(a.号車) - parseInt(b.号車));
             const row = document.createElement('div');
             row.className = 'formation-row';
             row.onclick = () => renderDetail(name);
@@ -256,7 +276,9 @@ function renderDetail(name) {
     document.getElementById('formation-view').classList.add('hidden');
     document.getElementById('detail-view').classList.remove('hidden');
     window.scrollTo(0,0);
-    const cars = allData.filter(r => r.編成名 === name && r.路線系統 === currentSystem && r.会社名 === currentCompany).sort((a,b) => a.号車 - b.号車);
+    
+    // formation.csvから該当編成の車両を取得
+    const cars = formationData.filter(r => r.編成名 === name && r.路線系統 === currentSystem && r.会社名 === currentCompany).sort((a,b) => parseInt(a.号車) - parseInt(b.号車));
     const top = cars[0];
 
     document.getElementById('detail-header-title').innerText = name;
@@ -275,7 +297,14 @@ function renderDetail(name) {
 
     const cCon = document.getElementById('car-details-container');
     cCon.innerHTML = '<div class="section-title">車両情報</div>';
+    
+    // 編成内のすべての車両IDをリスト化（車歴検索用）
+    const formationCarIds = cars.map(c => c.車両ID).filter(id => id);
+
     cars.forEach(c => {
+        // car_id.csvから製造情報を取得
+        const carMetaInfo = carIdData.find(m => m.車両ID === c.車両ID) || {};
+        
         const lp = PANTA_MAP[c.左パンタ];
         const rp = PANTA_MAP[c.右パンタ];
         cCon.innerHTML += `<div class="car-unit">
@@ -288,7 +317,10 @@ function renderDetail(name) {
                     ${c.左台車?`<img src="parts/${c.左台車}.png" class="bogie bogie-left">`:''}
                     ${c.右台車?`<img src="parts/${c.右台車}.png" class="bogie bogie-right">`:''}
                 </div>
-                <div class="car-meta"><div>${c.製造所||''}</div><div>${formatDateJP(c.落成日)}</div></div>
+                <div class="car-meta">
+                    <div>${carMetaInfo.製造所||''}</div>
+                    <div>${formatDateJP(carMetaInfo.落成日)}</div>
+                </div>
             </div>
             <div class="car-data-row"><div class="stamp-container">${getStampsHTML(c["車両情報(選択)"],'stamp-small')}</div></div>
         </div>`;
@@ -297,59 +329,32 @@ function renderDetail(name) {
     const hList = document.getElementById('history-list');
     hList.innerHTML = '';
 
-    // --- 車歴集計ロジック ---
-    const events = [];
-    const carCount = cars.length;
-
-    const pushEvent = (carNo, date, stamp, text) => {
-        if (!date || !text) return;
-        const key = `${date}|${stamp}|${text}`;
-        let ev = events.find(e => e.key === key);
-        if (!ev) {
-            ev = { key, date, stamp, text, carNos: [] };
-            events.push(ev);
-        }
-        ev.carNos.push(carNo);
-    };
-
-    cars.forEach(c => {
-        const shinseiText = `${c["新製(記述)"] || ''}${c.新製配置 || ''}に配置。`;
-        if (c.落成日) {
-            let rakuseiBody = `${c.製造所 || ''}にて落成。`;
-            if (!c.甲種輸送日 && !c.新製配給日 && c.新製配置) rakuseiBody += shinseiText;
-            pushEvent(c.車両番号, c.落成日, 'rakusei', rakuseiBody);
-        }
-        if (c.甲種輸送日) pushEvent(c.車両番号, c.甲種輸送日, 'kosyu', shinseiText);
-        if (c.新製配給日) pushEvent(c.車両番号, c.新製配給日, 'haikyu', shinseiText);
-        
-        // 組成の記述を修正
-        if (c.組成日) {
-            const soseiBody = `${c.組成場所 || ''}にて組成し、${c.所属基地 || ''}に配置。`;
-            pushEvent(c.車両番号, c.組成日, 'sosei', soseiBody);
-        }
-
-        for(let i=1; i<=7; i++) {
-            pushEvent(c.車両番号, c[`車歴${i}(日付)`], c[`車歴${i}(選択)`], c[`車歴${i}(記述)`]);
-        }
-        if (c.廃車回送日) pushEvent(c.車両番号, c.廃車回送日, 'haikai', (c["廃回(記述)"]||`${c["廃車場所(略称)"]}へ廃車回送。`));
-        if (c.廃車日) pushEvent(c.車両番号, c.廃車日, 'haisya', `${c["廃車場所(略称)"] || ''}にて廃車。`);
+    // --- history.csvから車歴を取得 ---
+    const filteredHistory = historyData.filter(row => {
+        // 車両ID-01から12までのどこかに、この編成の車両IDが含まれているかチェック
+        return Object.keys(row).some(key => key.startsWith('車両ID-') && formationCarIds.includes(row[key]));
     });
 
-    // 日付順にソートして描画
-    events.sort((a, b) => {
-        const ad = a.date.replace(/\//g,'');
-        const bd = b.date.replace(/\//g,'');
+    // 表示用に整形して追加
+    filteredHistory.sort((a, b) => {
+        const ad = (a.日付 || "").replace(/\//g,'');
+        const bd = (b.日付 || "").replace(/\//g,'');
         return ad.localeCompare(bd);
     }).forEach(ev => {
-        // 全車両一致でない場合のみ車番を追記
-        const suffix = (ev.carNos.length === carCount) ? "" : ` (${ev.carNos.join(', ')})`;
-        const finalDesc = ev.text + suffix;
-        
+        // そのイベントに含まれている、この編成内の車両を特定
+        const targetCarsInThisFormation = cars.filter(c => 
+            Object.values(ev).includes(c.車両ID)
+        ).map(c => c.車両番号);
+
+        const isAllCars = targetCarsInThisFormation.length === cars.length;
+        const suffix = isAllCars ? "" : ` (${targetCarsInThisFormation.join(', ')})`;
+        const finalDesc = (ev.記述 || "") + suffix;
+
         hList.innerHTML += `
             <div class="history-item">
                 <div class="history-top-row">
-                    <div class="history-date">${formatDateJP(ev.date)}</div>
-                    <div class="history-stamp-container">${getStampsHTML(ev.stamp, 'history-stamp', 'history')}</div>
+                    <div class="history-date">${formatDateJP(ev.日付)}</div>
+                    <div class="history-stamp-container">${getStampsHTML(ev.スタンプ, 'history-stamp', 'history')}</div>
                 </div>
                 <div class="history-desc">${finalDesc}</div>
             </div>`;
