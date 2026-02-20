@@ -2,147 +2,168 @@
 <html lang="ja">
 <head>
     <meta charset="UTF-8">
-    <title>鉄道車両管理システム - Advanced Timeline</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>編成表システム - Classic Style</title>
     <style>
-        :root { --header-bg: #1c1c1c; --main-bg: #f0f0f0; --text-main: #333; }
+        :root { --header-bg: #1c1c1c; --main-bg: #f0f0f0; --text-main: #333; --bar-bg: #333; }
         body { font-family: sans-serif; background: var(--main-bg); margin: 0; color: var(--text-main); }
-        .header { background: var(--header-bg); color: white; padding: 15px; position: sticky; top: 0; z-index: 100; }
-        .period-display { font-size: 0.9rem; color: #aaa; margin-top: 5px; display: block; }
-        .section-title { font-size: 16px; font-weight: bold; margin: 25px 0 10px 0; border-left: 5px solid #333; padding-left: 10px; }
-        .history-item { background: white; margin-bottom: 10px; padding: 12px; border-radius: 5px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
-        .history-date { font-weight: bold; color: #555; font-size: 0.85rem; }
-        .history-desc { margin-top: 5px; line-height: 1.4; }
-        .car-tag { display: inline-block; background: #e0e0e0; color: #444; font-size: 0.75rem; padding: 2px 6px; border-radius: 3px; margin-left: 5px; font-weight: bold; }
-        .hidden { display: none; }
-        .formation-card { background: white; margin: 10px; padding: 15px; border-radius: 8px; cursor: pointer; border: 1px solid #ddd; }
-    </small></style>
+        .header { background: var(--header-bg); color: white; padding: 15px; display: flex; align-items: center; gap: 10px; position: sticky; top: 0; z-index: 100; }
+        .system-section { background: var(--bar-bg); color: white; padding: 12px 15px; display: flex; align-items: center; justify-content: space-between; margin-top: 1px; cursor: pointer; }
+        .arrow { transition: transform 0.3s; font-size: 12px; }
+        .list-content { display: none; padding: 10px; background: white; }
+        .list-content.show { display: block; }
+        .row-item { padding: 15px; border-bottom: 1px solid #ccc; cursor: pointer; font-weight: bold; }
+        
+        /* 編成詳細 */
+        .detail-info { padding: 20px; }
+        .period-box { font-size: 0.9rem; color: #666; margin-bottom: 20px; padding: 10px; background: #e9e9e9; border-radius: 4px; }
+        .history-section { border-top: 2px solid #333; margin-top: 30px; padding-top: 15px; }
+        .history-item { margin-bottom: 15px; }
+        .history-date { font-weight: bold; font-size: 0.85rem; color: #555; }
+        .car-tag { background: #eee; font-size: 0.75rem; padding: 2px 5px; border-radius: 3px; margin-left: 5px; }
+        .hidden { display: none !important; }
+    </style>
 </head>
 <body>
 
 <div id="home-view">
-    <div class="header">編成一覧</div>
-    <div id="formation-list"></div>
+    <div class="header">ホーム</div>
+    <div id="company-container"></div>
+</div>
+
+<div id="formation-view" class="hidden">
+    <div class="header" onclick="showHome()" style="cursor:pointer;">◀ <span id="sys-title">系統名</span></div>
+    <div id="type-container"></div>
 </div>
 
 <div id="detail-view" class="hidden">
-    <div class="header">
-        <div onclick="showHome()" style="cursor:pointer; display:inline-block; margin-right:10px;">◀</div>
-        <span id="detail-title" style="font-weight:bold;"></span>
-        <span id="detail-period" class="period-display"></span>
-    </div>
-    
-    <div style="padding: 15px;">
-        <div class="section-title">編成・車両 統合履歴</div>
-        <div id="history-container"></div>
+    <div class="header" onclick="showFormation()" style="cursor:pointer;">◀ <span id="detail-title">編成名</span></div>
+    <div class="detail-info">
+        <div id="detail-period" class="period-box"></div>
+        <div id="car-visual-area">
+            </div>
+        <div class="history-section">
+            <h3>車両・編成履歴</h3>
+            <div id="history-list"></div>
+        </div>
     </div>
 </div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
 <script>
-let formations = [];
-let histories = [];
-let carIds = [];
-
-// スプレッドシート由来のファイル名をそのまま指定
+let formationData = [], historyData = [], carMaster = [];
 const FILES = {
     formation: 'data - 編成表.csv',
     history: 'data - 車歴表.csv',
     car: 'data - 車両ID.csv'
 };
 
-function loadCSV(url) {
-    return new Promise(resolve => {
-        Papa.parse(url, {
-            download: true, header: true, skipEmptyLines: true,
-            complete: results => resolve(results.data)
+// CSV一括読み込み
+Promise.all(Object.values(FILES).map(f => new Promise(resolve => {
+    Papa.parse(f, { download: true, header: true, skipEmptyLines: true, complete: r => resolve(r.data) });
+}))).then(results => {
+    [formationData, historyData, carMaster] = results;
+    renderHome();
+});
+
+// 1. ホーム（会社選択 → 路線系統プルダウン）
+function renderHome() {
+    const container = document.getElementById('company-container');
+    const companies = [...new Set(formationData.map(r => r.会社名))];
+    companies.forEach(com => {
+        const id = `com-${com}`;
+        container.insertAdjacentHTML('beforeend', `
+            <div class="system-section" onclick="toggle('${id}', this)">${com} <span class="arrow">▼</span></div>
+            <div id="${id}" class="list-content"></div>
+        `);
+        const sub = document.getElementById(id);
+        const systems = [...new Set(formationData.filter(r => r.会社名 === com).map(r => r.路線系統))];
+        systems.forEach(sys => {
+            const item = document.createElement('div');
+            item.className = 'row-item';
+            item.innerText = sys;
+            item.onclick = () => openSystem(sys, com);
+            sub.appendChild(item);
         });
     });
 }
 
-// データの読み込み
-Promise.all([
-    loadCSV(FILES.formation),
-    loadCSV(FILES.history),
-    loadCSV(FILES.car)
-]).then(results => {
-    formations = results[0];
-    histories = results[1];
-    carIds = results[2];
-    renderList();
-});
-
-function renderList() {
-    const list = document.getElementById('formation-list');
-    formations.forEach(f => {
-        const card = document.createElement('div');
-        card.className = 'formation-card';
-        card.innerHTML = `
-            <div style="font-weight:bold;">${f.編成名}</div>
-            <div style="font-size:0.8rem; color:#666;">期間: ${f.始} ～ ${f.終 || '現在'}</div>
-        `;
-        card.onclick = () => showDetail(f);
-        list.appendChild(card);
+// 2. 形式選択ページ（形式 → 編成名プルダウン）
+function openSystem(sys, com) {
+    document.getElementById('home-view').classList.add('hidden');
+    const fView = document.getElementById('formation-view');
+    fView.classList.remove('hidden');
+    document.getElementById('sys-title').innerText = sys;
+    
+    const container = document.getElementById('type-container');
+    container.innerHTML = '';
+    const sysRows = formationData.filter(r => r.路線系統 === sys && r.会社名 === com);
+    const types = [...new Set(sysRows.map(r => r.形式))];
+    
+    types.forEach(type => {
+        const id = `type-${type}`;
+        container.insertAdjacentHTML('beforeend', `
+            <div class="system-section" onclick="toggle('${id}', this)">${type} <span class="arrow">▼</span></div>
+            <div id="${id}" class="list-content"></div>
+        `);
+        const sub = document.getElementById(id);
+        const names = [...new Set(sysRows.filter(r => r.形式 === type).map(r => r.編成名))];
+        names.forEach(name => {
+            const item = document.createElement('div');
+            item.className = 'row-item';
+            item.innerText = name;
+            item.onclick = () => renderDetail(name, sys, com);
+            sub.appendChild(item);
+        });
     });
 }
 
-function showDetail(f) {
-    document.getElementById('home-view').classList.add('hidden');
+// 3. 詳細表示（期間・履歴）
+function renderDetail(name, sys, com) {
+    document.getElementById('formation-view').classList.add('hidden');
     document.getElementById('detail-view').classList.remove('hidden');
-    
-    document.getElementById('detail-title').innerText = f.編成名;
-    // 「始」〜「終」を詳細画面に表示
-    document.getElementById('detail-period').innerText = `運用期間：${f.始} ～ ${f.終 || '現在'}`;
+    document.getElementById('detail-title').innerText = name;
 
-    const container = document.getElementById('history-container');
-    container.innerHTML = '';
+    const currentCars = formationData.filter(r => r.編成名 === name && r.路線系統 === sys && r.会社名 === com);
+    const first = currentCars[0];
+    document.getElementById('detail-period').innerText = `運用期間：${first.始} ～ ${first.終 || '現在'}`;
 
-    // 現在の編成に含まれるIDを最大12両分取得
-    const currentFormationIDs = [];
-    for (let i = 1; i <= 12; i++) {
-        const id = f[`車両ID${i}`];
-        if (id && id.trim()) currentFormationIDs.push(id.trim());
-    }
+    // 履歴抽出ロジック（12両対応）
+    const targetIDs = currentCars.map(c => c.車両ID).filter(id => id);
+    const timeline = document.getElementById('history-list');
+    timeline.innerHTML = '';
 
-    // 車歴表からこの編成に関わるイベントを抽出
-    const filteredEvents = histories.filter(h => {
-        for (let i = 1; i <= 12; i++) {
-            if (currentFormationIDs.includes(h[`車両ID${i}`])) return true;
-        }
+    const events = historyData.filter(h => {
+        for(let i=1; i<=12; i++) if(targetIDs.includes(h[`車両ID${i}`])) return true;
         return false;
-    });
+    }).sort((a,b) => new Date(a.日付) - new Date(b.日付));
 
-    // 日付順に並べ替え
-    filteredEvents.sort((a, b) => new Date(a.日付) - new Date(b.日付));
-
-    filteredEvents.forEach(ev => {
-        // イベントに関わっている車両のうち、現在表示中の編成に属するものを特定
-        const affectedCars = [];
-        for (let i = 1; i <= 12; i++) {
-            const idInEv = ev[`車両ID${i}`];
-            if (currentFormationIDs.includes(idInEv)) {
-                // 車両IDシートから番号を引く
-                const master = carIds.find(c => c.車両ID === idInEv);
-                affectedCars.push(master ? master.車両番号 : idInEv);
+    events.forEach(ev => {
+        const affected = [];
+        for(let i=1; i<=12; i++) {
+            const id = ev[`車両ID${i}`];
+            if(targetIDs.includes(id)) {
+                const m = carMaster.find(c => c.車両ID === id);
+                affected.push(m ? m.車両番号 : id);
             }
         }
-
-        const isAll = affectedCars.length === currentFormationIDs.length;
-        const carTags = isAll ? "" : affectedCars.map(no => `<span class="car-tag">${no}</span>`).join('');
-
-        const item = document.createElement('div');
-        item.className = 'history-item';
-        item.innerHTML = `
-            <div class="history-date">${ev.日付}</div>
-            <div class="history-desc">${ev.記述}${carTags}</div>
-        `;
-        container.appendChild(item);
+        const isAll = affected.length === targetIDs.length;
+        timeline.insertAdjacentHTML('beforeend', `
+            <div class="history-item">
+                <div class="history-date">${ev.日付}</div>
+                <div class="history-desc">${ev.記述} ${isAll ? '' : affected.map(n => `<span class="car-tag">${n}</span>`).join('')}</div>
+            </div>
+        `);
     });
 }
 
-function showHome() {
-    document.getElementById('home-view').classList.remove('hidden');
-    document.getElementById('detail-view').classList.add('hidden');
+function toggle(id, el) {
+    const list = document.getElementById(id);
+    const isShow = list.classList.toggle('show');
+    el.querySelector('.arrow').style.transform = isShow ? 'rotate(180deg)' : 'rotate(0deg)';
 }
+function showHome() { document.getElementById('home-view').classList.remove('hidden'); document.getElementById('formation-view').classList.add('hidden'); }
+function showFormation() { document.getElementById('formation-view').classList.remove('hidden'); document.getElementById('detail-view').classList.add('hidden'); }
 </script>
 </body>
 </html>
