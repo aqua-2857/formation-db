@@ -325,14 +325,26 @@ function renderDetail(name, start, end, company) {
     cCon.innerHTML = '<div class="section-title">車両情報</div>';
     
     const carIdsInFormation = []; 
+    const finalHistory = [];
 
     cars.forEach(c => {
         const carId = c.車両ID;
         carIdsInFormation.push(carId);
         
         const carMeta = carIdMap[carId] || {};
-        const lp = PANTA_MAP[c.leftPanta || c.左パンタ];
-        const rp = PANTA_MAP[c.rightPanta || c.右パンタ];
+        const lp = PANTA_MAP[c.左パンタ];
+        const rp = PANTA_MAP[c.右パンタ];
+
+        // 自動落成履歴の作成
+        if (carMeta.落成日 && carMeta.製造所) {
+            finalHistory.push({
+                date: carMeta.落成日,
+                stamp: 'rakusei',
+                desc: `${carMeta.製造所}にて落成。`,
+                carId: carId,
+                carNo: c.車両番号
+            });
+        }
 
         cCon.innerHTML += `<div class="car-unit">
             <div class="car-visual-row">
@@ -356,57 +368,63 @@ function renderDetail(name, start, end, company) {
         </div>`;
     });
 
-    // 車歴のレンダリング
-    const hList = document.getElementById('history-list');
-    hList.innerHTML = '';
-
-    // 1. history.csv からの履歴
-    let events = historyData.filter(row => {
-        return Object.keys(row).some(key => {
-            return key.startsWith('車両ID-') && carIdsInFormation.includes(row[key]);
-        });
-    }).map(ev => {
+    // 既存のHistory.csvイベントを追加
+    historyData.forEach(ev => {
         const eventCarIds = [];
         Object.keys(ev).forEach(key => {
             if(key.startsWith('車両ID-') && ev[key] && carIdsInFormation.includes(ev[key])) {
                 eventCarIds.push(ev[key]);
             }
         });
-        const targetCarNos = cars.filter(c => eventCarIds.includes(c.車両ID)).map(c => c.車両番号);
-        const suffix = (targetCarNos.length === cars.length) ? "" : ` (${targetCarNos.join(', ')})`;
-        return {
-            date: ev.日付 || "",
-            stamps: getStampsHTML(ev.スタンプ, 'history-stamp', 'history'),
-            desc: (ev.記述 || "") + suffix
-        };
-    });
 
-    // 2. car_id.csv からの自動落成イベント
-    carIdsInFormation.forEach(id => {
-        const meta = carIdMap[id];
-        if (meta && meta.落成日) {
-            const carNo = cars.find(c => c.車両ID === id)?.車両番号 || "";
-            events.push({
-                date: meta.落成日,
-                stamps: getStampsHTML('rakusei', 'history-stamp', 'history'),
-                desc: `${meta.製造所 || "不明"}にて落成。 (${carNo})`
+        if (eventCarIds.length > 0) {
+            finalHistory.push({
+                date: ev.日付,
+                stamp: ev.スタンプ,
+                desc: ev.記述 || "",
+                carIds: eventCarIds
             });
         }
     });
 
-    // 日付順にソートして表示
-    events.sort((a, b) => {
+    // 日付でソート
+    finalHistory.sort((a, b) => {
         const ad = (a.date || "").replace(/\//g,'');
         const bd = (b.date || "").replace(/\//g,'');
         return ad.localeCompare(bd);
-    }).forEach(ev => {
+    });
+
+    const hList = document.getElementById('history-list');
+    hList.innerHTML = '';
+
+    // 表示用に集約
+    const displayedEvents = [];
+    finalHistory.forEach(item => {
+        const prev = displayedEvents[displayedEvents.length - 1];
+        // 日付・記述・スタンプが同じなら統合
+        if (prev && prev.date === item.date && prev.desc === item.desc && prev.stamp === item.stamp) {
+            if (item.carNo) prev.carNos.push(item.carNo);
+            if (item.carIds) item.carIds.forEach(id => { if(!prev.carIds.includes(id)) prev.carIds.push(id); });
+        } else {
+            displayedEvents.push({
+                ...item,
+                carNos: item.carNo ? [item.carNo] : [],
+                carIds: item.carIds || [item.carId]
+            });
+        }
+    });
+
+    displayedEvents.forEach(ev => {
+        const targetCarNos = ev.carNos.length > 0 ? ev.carNos : cars.filter(c => ev.carIds.includes(c.車両ID)).map(c => c.車両番号);
+        const suffix = (targetCarNos.length === cars.length) ? "" : ` (${targetCarNos.join(', ')})`;
+        
         hList.innerHTML += `
             <div class="history-item">
                 <div class="history-top-row">
                     <div class="history-date">${formatDateJP(ev.date)}</div>
-                    <div class="history-stamp-container">${ev.stamps}</div>
+                    <div class="history-stamp-container">${getStampsHTML(ev.stamp, 'history-stamp', 'history')}</div>
                 </div>
-                <div class="history-desc">${ev.desc}</div>
+                <div class="history-desc">${ev.desc + suffix}</div>
             </div>`;
     });
 }
