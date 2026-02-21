@@ -32,24 +32,21 @@
         .formation-row { display: flex; flex-direction: column; align-items: flex-start; gap: 5px; margin-bottom: 25px; cursor: pointer; }
         .f-name-tag { background: none; color: var(--text-main); font-weight: bold; min-width: 45px; text-align: left; font-size: 14px; flex-shrink: 0; }
         
-        /* 6両まで収まるように調整 & 溢れたら改行 */
         .car-mini-list { 
             display: flex; 
             gap: 1px; 
             align-items: flex-end; 
-            flex-wrap: wrap; /* 改行を許可 */
+            flex-wrap: wrap; 
             width: 100%;
         }
 
-        /* 画面幅に合わせて車両サイズを計算 (100% / 6両分) */
         .mini-car-container { 
             position: relative; 
-            width: calc((100vw - 30px) / 6.2); /* 余白を考慮しつつ6両強が並ぶ幅 */
-            max-width: 68px; /* PCなど大画面での最大サイズ */
-            aspect-ratio: 68 / 48; /* 元の比率を維持 */
+            width: calc((100vw - 30px) / 6.2); 
+            max-width: 68px; 
+            aspect-ratio: 68 / 48; 
         }
         
-        /* 内部パーツはコンテナの%で指定して崩れを防止 */
         .mini-panta { position: absolute; width: 14.7%; z-index: 5; top: 12.5%; }
         .mini-panta-l { left: 11.7%; }
         .mini-panta-r { right: 11.7%; }
@@ -334,8 +331,8 @@ function renderDetail(name, start, end, company) {
         carIdsInFormation.push(carId);
         
         const carMeta = carIdMap[carId] || {};
-        const lp = PANTA_MAP[c.左パンタ];
-        const rp = PANTA_MAP[c.右パンタ];
+        const lp = PANTA_MAP[c.leftPanta || c.左パンタ];
+        const rp = PANTA_MAP[c.rightPanta || c.右パンタ];
 
         cCon.innerHTML += `<div class="car-unit">
             <div class="car-visual-row">
@@ -359,40 +356,57 @@ function renderDetail(name, start, end, company) {
         </div>`;
     });
 
+    // 車歴のレンダリング
     const hList = document.getElementById('history-list');
     hList.innerHTML = '';
 
-    const relevantEvents = historyData.filter(row => {
+    // 1. history.csv からの履歴
+    let events = historyData.filter(row => {
         return Object.keys(row).some(key => {
             return key.startsWith('車両ID-') && carIdsInFormation.includes(row[key]);
         });
-    });
-
-    relevantEvents.sort((a, b) => {
-        const ad = (a.日付 || "").replace(/\//g,'');
-        const bd = (b.日付 || "").replace(/\//g,'');
-        return ad.localeCompare(bd);
-    }).forEach(ev => {
+    }).map(ev => {
         const eventCarIds = [];
         Object.keys(ev).forEach(key => {
             if(key.startsWith('車両ID-') && ev[key] && carIdsInFormation.includes(ev[key])) {
                 eventCarIds.push(ev[key]);
             }
         });
-
-        const targetCarNos = cars
-            .filter(c => eventCarIds.includes(c.車両ID))
-            .map(c => c.車両番号);
-
+        const targetCarNos = cars.filter(c => eventCarIds.includes(c.車両ID)).map(c => c.車両番号);
         const suffix = (targetCarNos.length === cars.length) ? "" : ` (${targetCarNos.join(', ')})`;
-        
+        return {
+            date: ev.日付 || "",
+            stamps: getStampsHTML(ev.スタンプ, 'history-stamp', 'history'),
+            desc: (ev.記述 || "") + suffix
+        };
+    });
+
+    // 2. car_id.csv からの自動落成イベント
+    carIdsInFormation.forEach(id => {
+        const meta = carIdMap[id];
+        if (meta && meta.落成日) {
+            const carNo = cars.find(c => c.車両ID === id)?.車両番号 || "";
+            events.push({
+                date: meta.落成日,
+                stamps: getStampsHTML('rakusei', 'history-stamp', 'history'),
+                desc: `${meta.製造所 || "不明"}にて落成。 (${carNo})`
+            });
+        }
+    });
+
+    // 日付順にソートして表示
+    events.sort((a, b) => {
+        const ad = (a.date || "").replace(/\//g,'');
+        const bd = (b.date || "").replace(/\//g,'');
+        return ad.localeCompare(bd);
+    }).forEach(ev => {
         hList.innerHTML += `
             <div class="history-item">
                 <div class="history-top-row">
-                    <div class="history-date">${formatDateJP(ev.日付)}</div>
-                    <div class="history-stamp-container">${getStampsHTML(ev.スタンプ, 'history-stamp', 'history')}</div>
+                    <div class="history-date">${formatDateJP(ev.date)}</div>
+                    <div class="history-stamp-container">${ev.stamps}</div>
                 </div>
-                <div class="history-desc">${(ev.記述 || "") + suffix}</div>
+                <div class="history-desc">${ev.desc}</div>
             </div>`;
     });
 }
