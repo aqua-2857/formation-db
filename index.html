@@ -120,13 +120,12 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
 <script>
 let formationData = [];
-let carIdMap = {}; // 車両IDをキーとした製造情報の辞書
-let historyData = []; // 車歴の全行データ
+let carIdMap = {}; 
+let historyData = []; 
 let currentSystem = "";
 let currentCompany = "";
 const PANTA_MAP = { '◇': 'p0', '＜': 'p1', '＞': 'p2', '<': 'py1', '>': 'py2' };
 
-// データ読み込み
 function loadAllData() {
     return new Promise((resolve) => {
         Papa.parse('formation.csv', {
@@ -137,7 +136,6 @@ function loadAllData() {
                 Papa.parse('car_id.csv', {
                     download: true, header: true, skipEmptyLines: 'greedy',
                     complete: function(cResults) {
-                        // car_idをマップ化
                         cResults.data.forEach(row => {
                             if(row['車両ID']) carIdMap[row['車両ID']] = row;
                         });
@@ -255,16 +253,20 @@ function showFormationList(sysName, comName) {
             </div>`);
 
         const rowsBox = fContainer.querySelector(`#${formId} .rows-box`);
-        const names = [...new Set(formData.map(r => r.編成名))];
+        
+        // 編成名と期間をセットにしてユニークなキーを作成
+        const namesWithPeriod = [...new Set(formData.map(r => `${r.編成名}|${r.始 || ''}|${r.終 || ''}`))];
 
-        names.forEach(name => {
-            const cars = formData.filter(r => r.編成名 === name).sort((a,b) => a.号車 - b.号車);
+        namesWithPeriod.forEach(keyStr => {
+            const [name, start, end] = keyStr.split('|');
+            const cars = formData.filter(r => r.編成名 === name && (r.始 || '') === start && (r.終 || '') === end).sort((a,b) => a.号車 - b.号車);
+            
             const row = document.createElement('div');
             row.className = 'formation-row';
-            row.onclick = () => renderDetail(name);
+            row.onclick = () => renderDetail(name, start, end);
 
-            // 1段目に編成名、2段目に車両リストを表示
-            let h = `<div class="f-name-tag">${name}</div><div class="car-mini-list">`;
+            const periodLabel = (start || end) ? ` (${start||''}〜${end||''})` : '';
+            let h = `<div class="f-name-tag">${name}${periodLabel}</div><div class="car-mini-list">`;
             cars.forEach(c => {
                 const lp = PANTA_MAP[c.左パンタ];
                 const rp = PANTA_MAP[c.右パンタ];
@@ -284,16 +286,22 @@ function showFormationList(sysName, comName) {
     });
 }
 
-function renderDetail(name) {
+function renderDetail(name, start, end) {
     document.getElementById('formation-view').classList.add('hidden');
     document.getElementById('detail-view').classList.remove('hidden');
     window.scrollTo(0,0);
     
-    // 基本情報はformation.csvから
-    const cars = formationData.filter(r => r.編成名 === name && r.路線系統 === currentSystem && r.会社名 === currentCompany).sort((a,b) => a.号車 - b.号車);
+    // 編成名と期間の両方でフィルタリング
+    const cars = formationData.filter(r => 
+        r.編成名 === name && 
+        (r.始 || '') === start && 
+        (r.終 || '') === end && 
+        r.路線系統 === currentSystem && 
+        r.会社名 === currentCompany
+    ).sort((a,b) => a.号車 - b.号車);
     const top = cars[0];
 
-    document.getElementById('detail-header-title').innerText = name;
+    document.getElementById('detail-header-title').innerText = name + ((start || end) ? ` (${start||''}〜${end||''})` : '');
     document.getElementById('info-type').innerText = `${top.形式} ${top.番台 || ''}`.trim();
     document.getElementById('info-base').innerText = top.所属基地;
 
@@ -310,13 +318,12 @@ function renderDetail(name) {
     const cCon = document.getElementById('car-details-container');
     cCon.innerHTML = '<div class="section-title">車両情報</div>';
     
-    const carIdsInFormation = []; // 編成内の車両IDリスト
+    const carIdsInFormation = []; 
 
     cars.forEach(c => {
         const carId = c.車両ID;
         carIdsInFormation.push(carId);
         
-        // 製造所・落成日はcar_id.csvから取得
         const carMeta = carIdMap[carId] || {};
         const lp = PANTA_MAP[c.左パンタ];
         const rp = PANTA_MAP[c.右パンタ];
@@ -343,24 +350,20 @@ function renderDetail(name) {
         </div>`;
     });
 
-    // 車歴表示ロジック
     const hList = document.getElementById('history-list');
     hList.innerHTML = '';
 
-    // history.csvの各行をチェックし、この編成の車両IDが含まれているものを抽出
     const relevantEvents = historyData.filter(row => {
         return Object.keys(row).some(key => {
             return key.startsWith('車両ID-') && carIdsInFormation.includes(row[key]);
         });
     });
 
-    // 日付順にソートして表示
     relevantEvents.sort((a, b) => {
         const ad = (a.日付 || "").replace(/\//g,'');
         const bd = (b.日付 || "").replace(/\//g,'');
         return ad.localeCompare(bd);
     }).forEach(ev => {
-        // どの車両が該当するかチェック（全車両か一部か）
         const eventCarIds = [];
         Object.keys(ev).forEach(key => {
             if(key.startsWith('車両ID-') && ev[key] && carIdsInFormation.includes(ev[key])) {
@@ -368,7 +371,6 @@ function renderDetail(name) {
             }
         });
 
-        // 該当する車両番号を特定（表示用）
         const targetCarNos = cars
             .filter(c => eventCarIds.includes(c.車両ID))
             .map(c => c.車両番号);
