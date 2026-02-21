@@ -72,7 +72,7 @@
         .car-detail-list { padding: 0 20px; }
         .car-unit { display: flex; flex-direction: column; margin-bottom: 45px; }
         .car-visual-row { display: flex; align-items: center; gap: 12px; }
-        .car-img-container { position: relative; width: 180px; height: 85px; flex-shrink: 0; }
+        .car-img-container { position: relative; width: 180px; height: 85px; flex-shrink: 0; cursor: pointer; }
         .detail-car-body { width: 100%; height: 55px; position: absolute; bottom: 14px; z-index: 10; background-size: contain; background-repeat: no-repeat; background-position: center; }
         .car-no-inline { position: absolute; top: calc(52% - 3px); left: 50%; transform: translate(-50%, -50%); z-index: 20; color: white; font-size: 14px; font-weight: bold; text-shadow: 1px 1px 2px rgba(0,0,0,1); white-space: nowrap; }
         
@@ -124,7 +124,10 @@
     </div>
     <div class="divider"></div>
     <div class="car-detail-list"><div id="car-details-container"></div></div>
-    <div class="history-section"><div class="section-title">車歴</div><div id="history-list"></div></div>
+    <div class="history-section">
+        <div class="section-title" id="history-title">車歴</div>
+        <div id="history-list"></div>
+    </div>
 </div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
@@ -133,6 +136,8 @@ let formationData = [];
 let carIdMap = {}; 
 let historyData = []; 
 let currentSystem = "";
+let currentCars = []; // 編成詳細表示中の車両リスト
+let fullHistoryEvents = []; // 描画用に生成された全履歴
 const PANTA_MAP = { '◇': 'p0', '＜': 'p1', '＞': 'p2', '<': 'py1', '>': 'py2' };
 
 function loadAllData() {
@@ -298,14 +303,14 @@ function renderDetail(name, start, end, company) {
     document.getElementById('detail-view').classList.remove('hidden');
     window.scrollTo(0,0);
     
-    const cars = formationData.filter(r => 
+    currentCars = formationData.filter(r => 
         r.編成名 === name && 
         (r.始 || '') === start && 
         (r.終 || '') === end && 
         r.路線系統 === currentSystem && 
         r.会社名 === company
     ).sort((a,b) => a.号車 - b.号車);
-    const top = cars[0];
+    const top = currentCars[0];
 
     document.getElementById('detail-header-title').innerText = name + ((start || end) ? ` (${start||''}〜${end||''})` : '');
     document.getElementById('info-type').innerText = `${top.形式} ${top.番台 || ''}`.trim();
@@ -325,9 +330,9 @@ function renderDetail(name, start, end, company) {
     cCon.innerHTML = '<div class="section-title">車両情報</div>';
     
     const carIdsInFormation = []; 
-    const finalHistory = [];
+    const historyPool = [];
 
-    cars.forEach(c => {
+    currentCars.forEach(c => {
         const carId = c.車両ID;
         carIdsInFormation.push(carId);
         
@@ -335,9 +340,8 @@ function renderDetail(name, start, end, company) {
         const lp = PANTA_MAP[c.左パンタ];
         const rp = PANTA_MAP[c.右パンタ];
 
-        // 自動落成履歴の作成
         if (carMeta.落成日 && carMeta.製造所) {
-            finalHistory.push({
+            historyPool.push({
                 date: carMeta.落成日,
                 stamp: 'rakusei',
                 desc: `${carMeta.製造所}にて落成。`,
@@ -348,7 +352,7 @@ function renderDetail(name, start, end, company) {
 
         cCon.innerHTML += `<div class="car-unit">
             <div class="car-visual-row">
-                <div class="car-img-container">
+                <div class="car-img-container" onclick="filterHistoryByCar('${carId}', '${c.車両番号}')">
                     ${lp ? `<img src="parts/${lp}.png" class="panta-detail panta-left ${lp === 'p0' ? 'panta-p0' : ''} ${lp.startsWith('py') ? 'low-panta' : ''}">` : ''}
                     ${rp ? `<img src="parts/${rp}.png" class="panta-detail panta-right ${rp === 'p0' ? 'panta-p0' : ''} ${rp.startsWith('py') ? 'low-panta' : ''}">` : ''}
                     <div class="detail-car-body" style="background-image: url('body/${c.車体アイコン}.png');"></div>
@@ -368,7 +372,6 @@ function renderDetail(name, start, end, company) {
         </div>`;
     });
 
-    // 既存のHistory.csvイベントを追加
     historyData.forEach(ev => {
         const eventCarIds = [];
         Object.keys(ev).forEach(key => {
@@ -376,9 +379,8 @@ function renderDetail(name, start, end, company) {
                 eventCarIds.push(ev[key]);
             }
         });
-
         if (eventCarIds.length > 0) {
-            finalHistory.push({
+            historyPool.push({
                 date: ev.日付,
                 stamp: ev.スタンプ,
                 desc: ev.記述 || "",
@@ -387,26 +389,17 @@ function renderDetail(name, start, end, company) {
         }
     });
 
-    // 日付でソート
-    finalHistory.sort((a, b) => {
-        const ad = (a.date || "").replace(/\//g,'');
-        const bd = (b.date || "").replace(/\//g,'');
-        return ad.localeCompare(bd);
-    });
-
-    const hList = document.getElementById('history-list');
-    hList.innerHTML = '';
-
-    // 表示用に集約
-    const displayedEvents = [];
-    finalHistory.forEach(item => {
-        const prev = displayedEvents[displayedEvents.length - 1];
-        // 日付・記述・スタンプが同じなら統合
+    historyPool.sort((a, b) => (a.date || "").replace(/\//g,'').localeCompare((b.date || "").replace(/\//g,'')));
+    
+    // 表示用のベースイベントをグローバルに保存
+    fullHistoryEvents = [];
+    historyPool.forEach(item => {
+        const prev = fullHistoryEvents[fullHistoryEvents.length - 1];
         if (prev && prev.date === item.date && prev.desc === item.desc && prev.stamp === item.stamp) {
             if (item.carNo) prev.carNos.push(item.carNo);
             if (item.carIds) item.carIds.forEach(id => { if(!prev.carIds.includes(id)) prev.carIds.push(id); });
         } else {
-            displayedEvents.push({
+            fullHistoryEvents.push({
                 ...item,
                 carNos: item.carNo ? [item.carNo] : [],
                 carIds: item.carIds || [item.carId]
@@ -414,9 +407,17 @@ function renderDetail(name, start, end, company) {
         }
     });
 
-    displayedEvents.forEach(ev => {
-        const targetCarNos = ev.carNos.length > 0 ? ev.carNos : cars.filter(c => ev.carIds.includes(c.車両ID)).map(c => c.車両番号);
-        const suffix = (targetCarNos.length === cars.length) ? "" : ` (${targetCarNos.join(', ')})`;
+    renderHistoryList(fullHistoryEvents);
+}
+
+function renderHistoryList(events, title = "車歴") {
+    document.getElementById('history-title').innerText = title;
+    const hList = document.getElementById('history-list');
+    hList.innerHTML = '';
+
+    events.forEach(ev => {
+        const targetCarNos = ev.carNos && ev.carNos.length > 0 ? ev.carNos : currentCars.filter(c => ev.carIds.includes(c.車両ID)).map(c => c.車両番号);
+        const suffix = (targetCarNos.length === currentCars.length) ? "" : ` (${targetCarNos.join(', ')})`;
         
         hList.innerHTML += `
             <div class="history-item">
@@ -427,6 +428,15 @@ function renderDetail(name, start, end, company) {
                 <div class="history-desc">${ev.desc + suffix}</div>
             </div>`;
     });
+}
+
+function filterHistoryByCar(carId, carNo) {
+    // 全体の車歴から、その車両IDが含まれるものだけを抽出
+    const filtered = fullHistoryEvents.filter(ev => ev.carIds.includes(carId));
+    renderHistoryList(filtered, `車歴 (${carNo})`);
+    
+    // 車歴セクションまでスクロール
+    document.querySelector('.history-section').scrollIntoView({ behavior: 'smooth' });
 }
 
 function toggleSection(id, el) {
