@@ -29,26 +29,40 @@
 
         .direction-label { color: var(--sub-gray); font-size: 11px; margin-bottom: 25px; display: flex; justify-content: space-between; font-weight: bold; }
         
-        .formation-row { display: flex; flex-direction: column; align-items: flex-start; gap: 5px; margin-bottom: 25px; cursor: pointer; }
+        .formation-row { display: flex; flex-direction: column; align-items: flex-start; gap: 8px; margin-bottom: 30px; cursor: pointer; }
         .f-name-tag { background: none; color: var(--text-main); font-weight: bold; min-width: 45px; text-align: left; font-size: 14px; flex-shrink: 0; }
         
-        .car-mini-list { display: flex; gap: 4px; align-items: flex-end; }
-        .mini-car-container { position: relative; width: 68px; height: 48px; }
-        
-        .mini-panta { position: absolute; width: 10px; z-index: 5; top: 6px; }
-        .mini-panta-l { left: 8px; }
-        .mini-panta-r { right: 8px; }
-        .mini-panta.panta-p0 { width: 20px; top: 6px; }
-        .mini-panta-l.panta-p0 { left: 3px; }
-        .mini-panta-r.panta-p0 { right: 3px; }
-        .mini-panta.low-panta { top: 11px; } 
+        /* 車両リスト：6両程度で収まるように設定し、超えたら折り返し */
+        .car-mini-list { 
+            display: flex; 
+            flex-wrap: wrap; /* 画面外に出る場合は改行 */
+            gap: 2px; 
+            align-items: flex-end; 
+            width: 100%;
+        }
 
-        .mini-bogie { position: absolute; width: 16px; z-index: 5; bottom: 6px; }
-        .mini-bogie-l { left: 8px; }
-        .mini-bogie-r { right: 8px; }
-        .mini-car-body { width: 100%; height: 28px; position: absolute; bottom: 10px; z-index: 10; background-size: contain; background-repeat: no-repeat; background-position: bottom; }
+        /* 1両のサイズ調整：スマホ幅で6両並ぶサイズ (100% / 6 = 16.6%) */
+        .mini-car-container { 
+            position: relative; 
+            width: 58px; 
+            height: 42px; 
+            flex-shrink: 0;
+        }
         
-        .mini-info-in-body { position: absolute; bottom: 18px; width: 100%; text-align: center; z-index: 20; color: white; font-weight: bold; font-size: 8px; text-shadow: 1px 1px 1px rgba(0,0,0,0.8); white-space: nowrap; pointer-events: none; }
+        .mini-panta { position: absolute; width: 8px; z-index: 5; top: 4px; }
+        .mini-panta-l { left: 6px; }
+        .mini-panta-r { right: 6px; }
+        .mini-panta.panta-p0 { width: 16px; top: 4px; }
+        .mini-panta-l.panta-p0 { left: 2px; }
+        .mini-panta-r.panta-p0 { right: 2px; }
+        .mini-panta.low-panta { top: 9px; } 
+
+        .mini-bogie { position: absolute; width: 14px; z-index: 5; bottom: 4px; }
+        .mini-bogie-l { left: 6px; }
+        .mini-bogie-r { right: 6px; }
+        .mini-car-body { width: 100%; height: 24px; position: absolute; bottom: 8px; z-index: 10; background-size: contain; background-repeat: no-repeat; background-position: bottom; }
+        
+        .mini-info-in-body { position: absolute; bottom: 15px; width: 100%; text-align: center; z-index: 20; color: white; font-weight: bold; font-size: 7px; text-shadow: 1px 1px 1px rgba(0,0,0,0.8); white-space: nowrap; pointer-events: none; }
 
         .section-title { font-size: 16px; font-weight: bold; margin-bottom: 12px; color: var(--text-main); }
         .detail-info-box { padding: 20px; color: var(--text-main); line-height: 1.6; font-size: 14px; }
@@ -211,7 +225,6 @@ function renderHome() {
             const row = document.createElement('div');
             row.className = 'line-sys-row';
             row.innerText = sys;
-            // ここで系統名だけを渡す
             row.onclick = () => showFormationList(sys);
             rowsContainer.appendChild(row);
         });
@@ -228,7 +241,6 @@ function showFormationList(sysName) {
     const fContainer = document.getElementById('formation-accordion-container');
     fContainer.innerHTML = '';
     
-    // 会社名を問わず、系統名が一致するすべてのデータを取得
     const sysData = formationData.filter(r => r.路線系統 === sysName);
     const formKeys = [...new Set(sysData.map(r => `${r.形式}|${r.見出しアイコン || ''}`))];
 
@@ -252,8 +264,6 @@ function showFormationList(sysName) {
             </div>`);
 
         const rowsBox = fContainer.querySelector(`#${formId} .rows-box`);
-        
-        // 編成名・始・終・会社名の組み合わせでユニークなキーを作成
         const namesWithPeriod = [...new Set(formData.map(r => `${r.編成名}|${r.始 || ''}|${r.終 || ''}|${r.会社名}`))];
 
         namesWithPeriod.forEach(keyStr => {
