@@ -69,10 +69,9 @@
         .stamp-icon-large { height: 32px; }
         
         .divider { height: 1px; background-color: var(--sub-gray); margin: 10px 20px; }
-        .car-detail-list { padding: 0 10px; } /* 余白を少し削って横幅を確保 */
+        .car-detail-list { padding: 0 10px; }
         .car-unit { display: flex; flex-direction: column; margin-bottom: 45px; }
         .car-visual-row { display: flex; align-items: center; gap: 8px; }
-        /* アイコンサイズを180pxから160pxに微調整、またはmeta側を優先 */
         .car-img-container { position: relative; width: 160px; height: 80px; flex-shrink: 0; cursor: pointer; }
         .detail-car-body { width: 100%; height: 50px; position: absolute; bottom: 14px; z-index: 10; background-size: contain; background-repeat: no-repeat; background-position: center; }
         .car-no-inline { position: absolute; top: calc(52% - 3px); left: 50%; transform: translate(-50%, -50%); z-index: 20; color: white; font-size: 14px; font-weight: bold; text-shadow: 1px 1px 2px rgba(0,0,0,1); white-space: nowrap; }
@@ -89,7 +88,6 @@
         .bogie-left { left: 22px; }
         .bogie-right { right: 22px; }
         
-        /* 改行防止のための設定 */
         .car-meta { font-size: 12px; color: #333333; font-weight: bold; flex-grow: 1; line-height: 1.4; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         .car-data-row { display: flex; align-items: center; gap: 12px; margin-top: 8px; font-size: 13px; color: #333333; }
         .stamp-small { height: 32px; }
@@ -292,7 +290,7 @@ function showFormationList(sysName) {
                     <div class="mini-car-body" style="background-image: url('body/${c.車体アイコン}.png');"></div>
                     <div class="mini-info-in-body">${c.略号||''}${lastNo}</div>
                     ${c.左台車 ? `<img src="parts/${c.左台車}.png" class="mini-bogie mini-bogie-l">` : ''}
-                    ${c.右台車 ? `<img src="parts/${c.右台車}.png" class="mini-bogie mini-bogie-r">` : ''}
+                    ${c.rightBogie ? `<img src="parts/${c.右台車}.png" class="mini-bogie mini-bogie-r">` : ''}
                 </div>`;
             });
             row.innerHTML = h + `</div>`;
@@ -412,14 +410,16 @@ function renderDetail(name, start, end, company) {
     renderHistoryList(fullHistoryEvents);
 }
 
-function renderHistoryList(events, title = "車歴") {
+function renderHistoryList(events, title = "車歴", isFiltered = false) {
     document.getElementById('history-title').innerText = title;
     const hList = document.getElementById('history-list');
     hList.innerHTML = '';
 
     events.forEach(ev => {
         const targetCarNos = ev.carNos && ev.carNos.length > 0 ? ev.carNos : currentCars.filter(c => ev.carIds.includes(c.車両ID)).map(c => c.車両番号);
-        const suffix = (targetCarNos.length === currentCars.length) ? "" : ` (${targetCarNos.join(', ')})`;
+        
+        // フィルタリング中（車両単体表示）の場合は括弧書きを表示しない
+        const suffix = (isFiltered || targetCarNos.length === currentCars.length) ? "" : ` (${targetCarNos.join(', ')})`;
         
         hList.innerHTML += `
             <div class="history-item">
@@ -434,7 +434,8 @@ function renderHistoryList(events, title = "車歴") {
 
 function filterHistoryByCar(carId, carNo) {
     const filtered = fullHistoryEvents.filter(ev => ev.carIds.includes(carId));
-    renderHistoryList(filtered, `車歴 (${carNo})`);
+    // 第3引数にtrueを渡してフィルタリング中であることを伝える
+    renderHistoryList(filtered, `車歴 (${carNo})`, true);
     document.querySelector('.history-section').scrollIntoView({ behavior: 'smooth' });
 }
 
