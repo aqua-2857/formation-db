@@ -136,25 +136,26 @@ let formationData = [];
 let carIdMap = {}; 
 let historyData = []; 
 let currentSystem = "";
-let currentCars = []; // 編成詳細表示中の車両リスト
-let fullHistoryEvents = []; // 描画用に生成された全履歴
+let currentCars = [];
+let fullHistoryEvents = []; 
 const PANTA_MAP = { '◇': 'p0', '＜': 'p1', '＞': 'p2', '<': 'py1', '>': 'py2' };
 
 function loadAllData() {
     return new Promise((resolve) => {
-        Papa.parse('formation.csv', {
+        // 新しいファイル名に合わせて修正
+        Papa.parse('file - formation.csv', {
             download: true, header: true, skipEmptyLines: 'greedy',
             complete: function(fResults) {
                 formationData = fResults.data.filter(r => r.会社名 && r.会社名.trim() !== "");
                 
-                Papa.parse('car_id.csv', {
+                Papa.parse('file - car_id.csv', {
                     download: true, header: true, skipEmptyLines: 'greedy',
                     complete: function(cResults) {
                         cResults.data.forEach(row => {
                             if(row['車両ID']) carIdMap[row['車両ID']] = row;
                         });
 
-                        Papa.parse('history.csv', {
+                        Papa.parse('file - history.csv', {
                             download: true, header: true, skipEmptyLines: 'greedy',
                             complete: function(hResults) {
                                 historyData = hResults.data;
@@ -391,7 +392,6 @@ function renderDetail(name, start, end, company) {
 
     historyPool.sort((a, b) => (a.date || "").replace(/\//g,'').localeCompare((b.date || "").replace(/\//g,'')));
     
-    // 表示用のベースイベントをグローバルに保存
     fullHistoryEvents = [];
     historyPool.forEach(item => {
         const prev = fullHistoryEvents[fullHistoryEvents.length - 1];
@@ -431,11 +431,8 @@ function renderHistoryList(events, title = "車歴") {
 }
 
 function filterHistoryByCar(carId, carNo) {
-    // 全体の車歴から、その車両IDが含まれるものだけを抽出
     const filtered = fullHistoryEvents.filter(ev => ev.carIds.includes(carId));
     renderHistoryList(filtered, `車歴 (${carNo})`);
-    
-    // 車歴セクションまでスクロール
     document.querySelector('.history-section').scrollIntoView({ behavior: 'smooth' });
 }
 
