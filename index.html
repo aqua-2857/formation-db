@@ -28,8 +28,11 @@
         .line-sys-row { padding: 15px 5px; cursor: pointer; border-bottom: 1px solid #ccc; font-weight: bold; color: var(--text-main); font-size: 15px; }
 
         .direction-label { color: var(--sub-gray); font-size: 11px; margin-bottom: 25px; display: flex; justify-content: space-between; font-weight: bold; }
-        .formation-row { display: flex; align-items: center; gap: 10px; margin-bottom: 25px; cursor: pointer; }
-        .f-name-tag { background: none; color: var(--text-main); font-weight: bold; min-width: 45px; text-align: center; font-size: 14px; flex-shrink: 0; }
+        
+        /* 編成表示を縦並び（2段）に変更 */
+        .formation-row { display: flex; flex-direction: column; align-items: flex-start; gap: 5px; margin-bottom: 25px; cursor: pointer; }
+        
+        .f-name-tag { background: none; color: var(--text-main); font-weight: bold; min-width: 45px; text-align: left; font-size: 14px; flex-shrink: 0; }
         
         .car-mini-list { display: flex; gap: 4px; align-items: flex-end; }
         .mini-car-container { position: relative; width: 68px; height: 48px; }
@@ -260,6 +263,7 @@ function showFormationList(sysName, comName) {
             row.className = 'formation-row';
             row.onclick = () => renderDetail(name);
 
+            // 1段目に編成名、2段目に車両リストを表示
             let h = `<div class="f-name-tag">${name}</div><div class="car-mini-list">`;
             cars.forEach(c => {
                 const lp = PANTA_MAP[c.左パンタ];
