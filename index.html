@@ -29,40 +29,39 @@
 
         .direction-label { color: var(--sub-gray); font-size: 11px; margin-bottom: 25px; display: flex; justify-content: space-between; font-weight: bold; }
         
-        .formation-row { display: flex; flex-direction: column; align-items: flex-start; gap: 8px; margin-bottom: 30px; cursor: pointer; }
+        .formation-row { display: flex; flex-direction: column; align-items: flex-start; gap: 5px; margin-bottom: 25px; cursor: pointer; }
         .f-name-tag { background: none; color: var(--text-main); font-weight: bold; min-width: 45px; text-align: left; font-size: 14px; flex-shrink: 0; }
         
-        /* 車両リスト：6両程度で収まるように設定し、超えたら折り返し */
+        /* 1段6両目安で調整、はみ出たら改行 */
         .car-mini-list { 
             display: flex; 
-            flex-wrap: wrap; /* 画面外に出る場合は改行 */
             gap: 2px; 
             align-items: flex-end; 
-            width: 100%;
+            flex-wrap: wrap; 
+            max-width: 100%;
         }
-
-        /* 1両のサイズ調整：スマホ幅で6両並ぶサイズ (100% / 6 = 16.6%) */
+        /* 1両の幅を計算 (画面幅から余白を引いて6分割に近いサイズに) */
         .mini-car-container { 
             position: relative; 
-            width: 58px; 
+            width: calc(100vw / 6.8); 
+            max-width: 60px;
             height: 42px; 
-            flex-shrink: 0;
         }
         
-        .mini-panta { position: absolute; width: 8px; z-index: 5; top: 4px; }
-        .mini-panta-l { left: 6px; }
-        .mini-panta-r { right: 6px; }
-        .mini-panta.panta-p0 { width: 16px; top: 4px; }
-        .mini-panta-l.panta-p0 { left: 2px; }
-        .mini-panta-r.panta-p0 { right: 2px; }
-        .mini-panta.low-panta { top: 9px; } 
+        .mini-panta { position: absolute; width: 15%; z-index: 5; top: 12%; }
+        .mini-panta-l { left: 12%; }
+        .mini-panta-r { right: 12%; }
+        .mini-panta.panta-p0 { width: 30%; top: 12%; }
+        .mini-panta-l.panta-p0 { left: 5%; }
+        .mini-panta-r.panta-p0 { right: 5%; }
+        .mini-panta.low-panta { top: 22%; } 
 
-        .mini-bogie { position: absolute; width: 14px; z-index: 5; bottom: 4px; }
-        .mini-bogie-l { left: 6px; }
-        .mini-bogie-r { right: 6px; }
-        .mini-car-body { width: 100%; height: 24px; position: absolute; bottom: 8px; z-index: 10; background-size: contain; background-repeat: no-repeat; background-position: bottom; }
+        .mini-bogie { position: absolute; width: 25%; z-index: 5; bottom: 12%; }
+        .mini-bogie-l { left: 12%; }
+        .mini-bogie-r { right: 12%; }
+        .mini-car-body { width: 100%; height: 58%; position: absolute; bottom: 20%; z-index: 10; background-size: contain; background-repeat: no-repeat; background-position: bottom; }
         
-        .mini-info-in-body { position: absolute; bottom: 15px; width: 100%; text-align: center; z-index: 20; color: white; font-weight: bold; font-size: 7px; text-shadow: 1px 1px 1px rgba(0,0,0,0.8); white-space: nowrap; pointer-events: none; }
+        .mini-info-in-body { position: absolute; bottom: 35%; width: 100%; text-align: center; z-index: 20; color: white; font-weight: bold; font-size: 7px; text-shadow: 1px 1px 1px rgba(0,0,0,0.8); white-space: nowrap; pointer-events: none; }
 
         .section-title { font-size: 16px; font-weight: bold; margin-bottom: 12px; color: var(--text-main); }
         .detail-info-box { padding: 20px; color: var(--text-main); line-height: 1.6; font-size: 14px; }
@@ -264,6 +263,7 @@ function showFormationList(sysName) {
             </div>`);
 
         const rowsBox = fContainer.querySelector(`#${formId} .rows-box`);
+        
         const namesWithPeriod = [...new Set(formData.map(r => `${r.編成名}|${r.始 || ''}|${r.終 || ''}|${r.会社名}`))];
 
         namesWithPeriod.forEach(keyStr => {
