@@ -69,25 +69,28 @@
         .stamp-icon-large { height: 32px; }
         
         .divider { height: 1px; background-color: var(--sub-gray); margin: 10px 20px; }
-        .car-detail-list { padding: 0 20px; }
+        .car-detail-list { padding: 0 10px; } /* 余白を少し削って横幅を確保 */
         .car-unit { display: flex; flex-direction: column; margin-bottom: 45px; }
-        .car-visual-row { display: flex; align-items: center; gap: 12px; }
-        .car-img-container { position: relative; width: 180px; height: 85px; flex-shrink: 0; cursor: pointer; }
-        .detail-car-body { width: 100%; height: 55px; position: absolute; bottom: 14px; z-index: 10; background-size: contain; background-repeat: no-repeat; background-position: center; }
+        .car-visual-row { display: flex; align-items: center; gap: 8px; }
+        /* アイコンサイズを180pxから160pxに微調整、またはmeta側を優先 */
+        .car-img-container { position: relative; width: 160px; height: 80px; flex-shrink: 0; cursor: pointer; }
+        .detail-car-body { width: 100%; height: 50px; position: absolute; bottom: 14px; z-index: 10; background-size: contain; background-repeat: no-repeat; background-position: center; }
         .car-no-inline { position: absolute; top: calc(52% - 3px); left: 50%; transform: translate(-50%, -50%); z-index: 20; color: white; font-size: 14px; font-weight: bold; text-shadow: 1px 1px 2px rgba(0,0,0,1); white-space: nowrap; }
         
-        .panta-detail { position: absolute; top: -5px; width: 24px; z-index: 5; } 
-        .panta-left { left: 25px; }
-        .panta-right { right: 25px; }
-        .panta-detail.panta-p0 { width: 48px; top: -5px; }
-        .panta-left.panta-p0 { left: 13px; }
-        .panta-right.panta-p0 { right: 13px; }
+        .panta-detail { position: absolute; top: -5px; width: 22px; z-index: 5; } 
+        .panta-left { left: 22px; }
+        .panta-right { right: 22px; }
+        .panta-detail.panta-p0 { width: 44px; top: -5px; }
+        .panta-left.panta-p0 { left: 11px; }
+        .panta-right.panta-p0 { right: 11px; }
         .panta-detail.low-panta { top: 5px; } 
 
-        .bogie { position: absolute; bottom: 4px; width: 45px; z-index: 5; }
-        .bogie-left { left: 25px; }
-        .bogie-right { right: 25px; }
-        .car-meta { font-size: 12px; color: #333333; font-weight: bold; flex-grow: 1; line-height: 1.4; }
+        .bogie { position: absolute; bottom: 4px; width: 40px; z-index: 5; }
+        .bogie-left { left: 22px; }
+        .bogie-right { right: 22px; }
+        
+        /* 改行防止のための設定 */
+        .car-meta { font-size: 12px; color: #333333; font-weight: bold; flex-grow: 1; line-height: 1.4; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         .car-data-row { display: flex; align-items: center; gap: 12px; margin-top: 8px; font-size: 13px; color: #333333; }
         .stamp-small { height: 32px; }
 
@@ -142,7 +145,6 @@ const PANTA_MAP = { '◇': 'p0', '＜': 'p1', '＞': 'p2', '<': 'py1', '>': 'py2
 
 function loadAllData() {
     return new Promise((resolve) => {
-        // 新しいファイル名に合わせて修正
         Papa.parse('file - formation.csv', {
             download: true, header: true, skipEmptyLines: 'greedy',
             complete: function(fResults) {
