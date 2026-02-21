@@ -30,7 +30,6 @@
         .direction-label { color: var(--sub-gray); font-size: 11px; margin-bottom: 25px; display: flex; justify-content: space-between; font-weight: bold; }
         
         .formation-row { display: flex; flex-direction: column; align-items: flex-start; gap: 5px; margin-bottom: 25px; cursor: pointer; }
-        
         .f-name-tag { background: none; color: var(--text-main); font-weight: bold; min-width: 45px; text-align: left; font-size: 14px; flex-shrink: 0; }
         
         .car-mini-list { display: flex; gap: 4px; align-items: flex-end; }
@@ -129,7 +128,7 @@ function loadAllData() {
         Papa.parse('formation.csv', {
             download: true, header: true, skipEmptyLines: 'greedy',
             complete: function(fResults) {
-                formationData = fResults.data.filter(r => r.路線系統 && r.路線系統.trim() !== "");
+                formationData = fResults.data.filter(r => r.会社名 && r.会社名.trim() !== "");
                 
                 Papa.parse('car_id.csv', {
                     download: true, header: true, skipEmptyLines: 'greedy',
@@ -194,20 +193,28 @@ function getStampsHTML(stampStr, className, folder = 'stamp') {
 function renderHome() {
     const container = document.getElementById('accordion-container');
     container.innerHTML = '';
-    
-    // 会社名ごとに分けるのではなく、路線系統のユニークなリストを作成
-    const systems = [...new Set(formationData.map(r => r.路線系統))];
-    
-    // 便宜上、セクション分けは「全系統」としてまとめる、または路線系統名そのものを表示する形式にします
-    systems.forEach(sys => {
-        const row = document.createElement('div');
-        row.className = 'line-sys-row';
-        row.style.background = "white";
-        row.style.marginBottom = "1px";
-        row.style.padding = "15px";
-        row.innerText = sys;
-        row.onclick = () => showFormationList(sys);
-        container.appendChild(row);
+    const companies = [...new Set(formationData.map(r => r.会社名))];
+    companies.forEach(com => {
+        const comId = `com-${com.replace(/\s+/g, '')}`;
+        container.insertAdjacentHTML('beforeend', `
+            <div class="system-section" onclick="toggleSection('${comId}', this)">
+                <div class="system-title">${com}</div>
+                <div class="arrow">▼</div>
+            </div>
+            <div id="${comId}" class="formation-list-bg">
+                <div class="rows-container"></div>
+            </div>`);
+        const rowsContainer = container.querySelector(`#${comId} .rows-container`);
+        const comData = formationData.filter(r => r.会社名 === com);
+        const systems = [...new Set(comData.map(r => r.路線系統))];
+        systems.forEach(sys => {
+            const row = document.createElement('div');
+            row.className = 'line-sys-row';
+            row.innerText = sys;
+            // ここで系統名だけを渡す
+            row.onclick = () => showFormationList(sys);
+            rowsContainer.appendChild(row);
+        });
     });
 }
 
@@ -221,7 +228,7 @@ function showFormationList(sysName) {
     const fContainer = document.getElementById('formation-accordion-container');
     fContainer.innerHTML = '';
     
-    // 会社名を問わず、現在の路線系統に合致するデータを抽出
+    // 会社名を問わず、系統名が一致するすべてのデータを取得
     const sysData = formationData.filter(r => r.路線系統 === sysName);
     const formKeys = [...new Set(sysData.map(r => `${r.形式}|${r.見出しアイコン || ''}`))];
 
@@ -246,16 +253,16 @@ function showFormationList(sysName) {
 
         const rowsBox = fContainer.querySelector(`#${formId} .rows-box`);
         
-        // 編成名と期間をセットにしてユニークなキーを作成
-        const namesWithPeriod = [...new Set(formData.map(r => `${r.編成名}|${r.始 || ''}|${r.終 || ''}`))];
+        // 編成名・始・終・会社名の組み合わせでユニークなキーを作成
+        const namesWithPeriod = [...new Set(formData.map(r => `${r.編成名}|${r.始 || ''}|${r.終 || ''}|${r.会社名}`))];
 
         namesWithPeriod.forEach(keyStr => {
-            const [name, start, end] = keyStr.split('|');
-            const cars = formData.filter(r => r.編成名 === name && (r.始 || '') === start && (r.終 || '') === end).sort((a,b) => a.号車 - b.号車);
+            const [name, start, end, company] = keyStr.split('|');
+            const cars = formData.filter(r => r.編成名 === name && (r.始 || '') === start && (r.終 || '') === end && r.会社名 === company).sort((a,b) => a.号車 - b.号車);
             
             const row = document.createElement('div');
             row.className = 'formation-row';
-            row.onclick = () => renderDetail(name, start, end);
+            row.onclick = () => renderDetail(name, start, end, company);
 
             const periodLabel = (start || end) ? ` (${start||''}〜${end||''})` : '';
             let h = `<div class="f-name-tag">${name}${periodLabel}</div><div class="car-mini-list">`;
@@ -278,17 +285,17 @@ function showFormationList(sysName) {
     });
 }
 
-function renderDetail(name, start, end) {
+function renderDetail(name, start, end, company) {
     document.getElementById('formation-view').classList.add('hidden');
     document.getElementById('detail-view').classList.remove('hidden');
     window.scrollTo(0,0);
     
-    // 会社名を条件から外し、系統・編成名・期間でフィルタリング
     const cars = formationData.filter(r => 
         r.編成名 === name && 
         (r.始 || '') === start && 
         (r.終 || '') === end && 
-        r.路線系統 === currentSystem
+        r.路線系統 === currentSystem && 
+        r.会社名 === company
     ).sort((a,b) => a.号車 - b.号車);
     const top = cars[0];
 
