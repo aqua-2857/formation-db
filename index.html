@@ -400,22 +400,31 @@ function showFormationList(sysName) {
     fContainer.innerHTML = '';
     
     const sysData = formationData.filter(r => r.路線系統 === sysName);
-    const formKeys = [...new Set(sysData.map(r => `${r.形式}|${r.見出しアイコン || ''}`))];
+    const formKeys = [...new Set(sysData.map(r => `${r.形式}|${r.見出しアイコン || ''}|${r.見出し特記事項 || ''}`))];
 
     formKeys.forEach((key, index) => {
-        const [formName, iconName] = key.split('|');
-        const formId = `form-${index}-${formName.replace(/\s+/g, '')}`;
-        const formData = sysData.filter(r => r.形式 === formName && (r.見出しアイコン || '') === iconName);
-        const first = formData[0];
+    const [formName, iconName, note] = key.split('|'); // note（特記事項）を追加
+    const formId = `form-${index}-${formName.replace(/\s+/g, '')}`;
+    
+    // データ抽出条件に特記事項を追加
+    const formData = sysData.filter(r => 
+        r.形式 === formName && 
+        (r.見出しアイコン || '') === iconName && 
+        (r.見出し特記事項 || '') === note
+    );
+    const first = formData[0];
 
-        fContainer.insertAdjacentHTML('beforeend', `
-            <div class="system-section" onclick="toggleSection('${formId}', this)">
-                <div class="system-title">
-                    ${iconName ? `<img src="icon/${iconName}.png" class="system-icon">` : ''}
-                    ${formName}
+    fContainer.insertAdjacentHTML('beforeend', `
+        <div class="system-section" onclick="toggleSection('${formId}', this)">
+            <div class="system-title">
+                ${iconName ? `<img src="icon/${iconName}.png" class="system-icon">` : ''}
+                <div style="display: flex; flex-direction: column; line-height: 1.2;">
+                    <span>${formName}</span>
+                    ${note ? `<span style="font-size: 0.75rem; font-weight: normal; opacity: 0.8;">${note}</span>` : ''}
                 </div>
-                <div class="arrow">▼</div>
             </div>
+            <div class="arrow">▼</div>
+        </div>
             <div id="${formId}" class="formation-list-bg">
                 <div class="direction-label"><span>◀︎${first.左方向||''}</span><span>${first.右方向||''}▶︎</span></div>
                 <div class="rows-box"></div>
