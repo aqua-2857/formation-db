@@ -543,18 +543,20 @@ function renderDetail(name, start, end, company) {
             });
         }
 
-        cCon.innerHTML += `
-            <div class="car-unit">
-                <div class="car-visual-row">
-                    <div class="car-img-container" onclick="filterHistoryByCar('${carId}', '${c.車両番号}')">
-                        ${lp ? `<img src="parts/${lp}.png" class="panta-detail panta-left ${lp === 'p0' ? 'panta-p0' : ''} ${lp.startsWith('py') ? 'low-panta' : ''}">` : ''}
-                        ${rp ? `<img src="parts/${rp}.png" class="panta-detail panta-right ${rp === 'p0' ? 'panta-p0' : ''} ${rp.startsWith('py') ? 'low-panta' : ''}">` : ''}
-                        <div class="detail-car-body" style="background-image: url('body/${c.車体アイコン}.png');"></div>
-                        <div class="car-no-inline">${c.車両番号}</div>
-                        ${c.左台車?`<img src="parts/${c.左台車}.png" class="bogie bogie-left">`:''}
-                        ${c.右台車?`<img src="parts/${c.右台車}.png" class="bogie bogie-right">`:''}
-                    </div>
-                    <div class="car-meta">
+       cCon.innerHTML += `
+           <div class="car-unit">
+               <div class="car-visual-row">
+                   <div class="car-img-container" onclick="filterHistoryByCar('${carId}', '${c.車両番号}')">
+                       ${lp ? `<img src="parts/${lp}.png" class="panta-detail panta-left ${lp === 'p0' ? 'panta-p0' : ''} ${lp.startsWith('py') ? 'low-panta' : ''}">` : ''}
+                       ${rp ? `<img src="parts/${rp}.png" class="panta-detail panta-right ${rp === 'p0' ? 'panta-p0' : ''} ${rp.startsWith('py') ? 'low-panta' : ''}">` : ''}
+                
+                       <img src="body/${c.車体アイコン}.png" class="detail-car-body">
+                
+                       <div class="car-no-inline">${c.車両番号}</div>
+                       ${c.左台車?`<img src="parts/${c.左台車}.png" class="bogie bogie-left">`:''}
+                       ${c.右台車?`<img src="parts/${c.右台車}.png" class="bogie bogie-right">`:''}
+                   </div>
+                   <div class="car-meta">
                         <div>${carMeta.製造所 || ''}</div>
                         <div>${formatDateJP(carMeta.落成日)}</div>
                         <div class="stamp-container" style="margin-top: 5px;">
