@@ -131,7 +131,7 @@
         .mini-bogie-l { left: 11.7%; }
         .mini-bogie-r { right: 11.7%; }
         .mini-car-body { width: 100%; height: 58.3%; position: absolute; bottom: 20.8%; z-index: 10; background-size: contain; background-repeat: no-repeat; background-position: bottom; }
-        .mini-info-in-body { position: absolute; bottom: 37.5%; width: 100%; text-align: center; z-index: 20; color: white; font-weight: bold; font-size: min(8px, 1.8vw); text-shadow: 1px 1px 1px rgba(0,0,0,0.8); white-space: nowrap; pointer-events: none; }
+        .mini-info-in-body { position: absolute; bottom: calc(37.5% - 2px); width: 100%; text-align: center; z-index: 20; color: white; font-weight: bold; font-size: min(8px, 1.8vw); text-shadow: 1px 1px 1px rgba(0,0,0,0.8); white-space: nowrap; pointer-events: none; }
         .section-title { font-size: 16px; font-weight: bold; margin-bottom: 12px; color: var(--text-main); }
         .detail-info-box { padding: 20px; color: var(--text-main); line-height: 1.6; font-size: 14px; }
         .info-row { display: flex; margin-bottom: 5px; }
@@ -437,12 +437,12 @@ function showFormationList(sysName) {
             cars.forEach(c => {
                 const lp = PANTA_MAP[c.左パンタ];
                 const rp = PANTA_MAP[c.右パンタ];
-                const lastNo = c.車両番号 ? c.車両番号.split('-').pop() : "";
-                h += `<div class="mini-car-container">
+                const carNoDisplay = c.略号 ? (c.車両番号 ? c.車両番号.split('-').pop() : "") : (c.車両番号 || "");
+h += `<div class="mini-car-container">
                     ${lp ? `<img src="parts/${lp}.png" class="mini-panta mini-panta-l ${lp === 'p0' ? 'panta-p0' : ''} ${lp.startsWith('py') ? 'low-panta' : ''}">` : ''}
                     ${rp ? `<img src="parts/${rp}.png" class="mini-panta mini-panta-r ${rp === 'p0' ? 'panta-p0' : ''} ${rp.startsWith('py') ? 'low-panta' : ''}">` : ''}
                     <div class="mini-car-body" style="background-image: url('body/${c.車体アイコン}.png');"></div>
-                    <div class="mini-info-in-body">${c.略号||''}${lastNo}</div>
+                    <div class="mini-info-in-body">${c.略号||''}${carNoDisplay}</div>
                     ${c.左台車 ? `<img src="parts/${c.左台車}.png" class="mini-bogie mini-bogie-l">` : ''}
                     ${c.右台車 ? `<img src="parts/${c.右台車}.png" class="mini-bogie mini-bogie-r">` : ''}
                 </div>`;
