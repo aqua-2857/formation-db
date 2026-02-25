@@ -118,26 +118,27 @@
         .direction-label { color: var(--sub-gray); font-size: 11px; margin-bottom: 25px; display: flex; justify-content: space-between; font-weight: bold; }
         .formation-row { display: flex; flex-direction: column; align-items: flex-start; gap: 5px; margin-bottom: 25px; cursor: pointer; }
         .f-name-tag { background: none; color: var(--text-main); font-weight: bold; min-width: 45px; text-align: left; font-size: 14px; flex-shrink: 0; }
-        .car-mini-list { display: flex; gap: 0px; align-items: flex-end; flex-wrap: wrap; width: 100%; }
         
-        /* 特殊車体長対応：コンテナを画像幅に追従させる */
+        .car-mini-list { display: flex; gap: 1px; align-items: flex-end; flex-wrap: wrap; width: 100%; }
+        
+        /* 車両アイコン幅をファイルに合わせる設定 */
         .mini-car-container { position: relative; width: auto; height: 48px; display: flex; align-items: flex-end; }
+        .mini-car-body { height: 58.3%; width: auto; display: block; position: relative; z-index: 10; }
         
-        .mini-panta { position: absolute; width: 10px; z-index: 15; top: 12.5%; } /* z-indexを車体より上に */
-        .mini-panta-l { left: 11.7%; }
-        .mini-panta-r { right: 11.7%; }
+        /* パーツ位置をpx指定に変更（ズレ防止） */
+        .mini-panta { position: absolute; width: 10px; z-index: 15; top: 12.5%; }
+        .mini-panta-l { left: 8px; }
+        .mini-panta-r { right: 8px; }
         .mini-panta.panta-p0 { width: 20px; top: 12.5%; }
-        .mini-panta-l.panta-p0 { left: 4.4%; }
-        .mini-panta-r.panta-p0 { right: 4.4%; }
+        .mini-panta-l.panta-p0 { left: 3px; }
+        .mini-panta-r.panta-p0 { right: 3px; }
         .mini-panta.low-panta { top: 22.9%; } 
+        
         .mini-bogie { position: absolute; width: 16px; z-index: 5; bottom: 12.5%; }
-        .mini-bogie-l { left: 11.7%; }
-        .mini-bogie-r { right: 11.7%; }
-        
-        /* 車体アイコン：背景画像ではなく実体画像として扱う */
-        .mini-car-body { height: 28px; width: auto; position: relative; z-index: 10; display: block; }
-        
-        .mini-info-in-body { position: absolute; bottom: 8px; width: 100%; text-align: center; z-index: 20; color: white; font-weight: bold; font-size: min(8px, 1.8vw); text-shadow: 1px 1px 1px rgba(0,0,0,0.8); white-space: nowrap; pointer-events: none; }
+        .mini-bogie-l { left: 8px; }
+        .mini-bogie-r { right: 8px; }
+
+        .mini-info-in-body { position: absolute; bottom: calc(37.5% - 2px); width: 100%; text-align: center; z-index: 20; color: white; font-weight: bold; font-size: min(8px, 1.8vw); text-shadow: 1px 1px 1px rgba(0,0,0,0.8); white-space: nowrap; pointer-events: none; }
         
         .section-title { font-size: 16px; font-weight: bold; margin-bottom: 12px; color: var(--text-main); }
         .detail-info-box { padding: 20px; color: var(--text-main); line-height: 1.6; font-size: 14px; }
@@ -151,7 +152,7 @@
         .car-img-container { position: relative; width: 160px; height: 80px; flex-shrink: 0; cursor: pointer; }
         .detail-car-body { width: 100%; height: 50px; position: absolute; bottom: 14px; z-index: 10; background-size: contain; background-repeat: no-repeat; background-position: center; }
         .car-no-inline { position: absolute; top: calc(52% - 3px); left: 50%; transform: translate(-50%, -50%); z-index: 20; color: white; font-size: 14px; font-weight: bold; text-shadow: 1px 1px 2px rgba(0,0,0,1); white-space: nowrap; }
-        .panta-detail { position: absolute; top: -5px; width: 22px; z-index: 15; } 
+        .panta-detail { position: absolute; top: -5px; width: 22px; z-index: 5; } 
         .panta-left { left: 22px; }
         .panta-right { right: 22px; }
         .panta-detail.panta-p0 { width: 44px; top: -5px; }
@@ -167,19 +168,12 @@
             color: #333333;
             display: flex;
             flex-direction: column;
-            justify-content: flex-start; 
-            gap: 2px; 
+            justify-content: flex-start;
+            gap: 2px;
         }
 
-        .stamp-container {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 4px;
-        }
-
-        .car-desc, .spec-row {
-            padding-left: 20px;
-        }
+        .stamp-container { display: flex; flex-wrap: wrap; gap: 4px; }
+        .car-desc, .spec-row { padding-left: 20px; }
         .car-data-row { display: flex; align-items: center; gap: 12px; margin-top: 8px; font-size: 13px; color: #333333; }
         .stamp-small { height: 32px; }
         .history-section { border-top: 1px solid var(--sub-gray); margin-top: 20px; padding: 20px; }
@@ -191,39 +185,12 @@
 
         .hidden { display: none !important; }
 
-        .car-unit {
-            margin-bottom: 20px;
-            padding: 0 0 20px 0; 
-            border-bottom: 0.5px solid #ddd;
-        }
-
-        .car-unit:last-of-type {
-            border-bottom: none !important;
-        }
-
-        .spec-row {
-            display: flex;
-            font-size: 12px;
-            margin-bottom: 5px;
-            padding-left: 20px; 
-        }
-
-        .spec-label {
-            width: 85px; 
-            color: #808080;
-            flex-shrink: 0;
-        }
-
-        .spec-value {
-            color: #333;
-            padding-left: 5px;
-        }
-
-        .car-desc {
-            padding: 0 20px;
-            margin: 8px 0 10px 0;
-            font-size: 13px;
-        }
+        .car-unit { margin-bottom: 20px; padding: 0 0 20px 0; border-bottom: 0.5px solid #ddd; }
+        .car-unit:last-of-type { border-bottom: none !important; }
+        .spec-row { display: flex; font-size: 12px; margin-bottom: 5px; padding-left: 20px; }
+        .spec-label { width: 85px; color: #808080; flex-shrink: 0; }
+        .spec-value { color: #333; padding-left: 5px; }
+        .car-desc { padding: 0 20px; margin: 8px 0 10px 0; font-size: 13px; }
     </style>
 </head>
 <body>
@@ -288,8 +255,8 @@
      <h2>このサイトについて</h2>
         <p> 本サイトは、鉄道車両の編成、車歴をまとめたサイトです。日々データの追加、更新中です。 </p> 
         <p> 本サイトならびにデータは個人の趣味で制作・運営されており、各鉄道会社とは一切関係ありません。 </p> 
-        <p> 本サイトのデータは、自ら調査した情報のほか、公表されている各種資料、鉄道雑誌、およびSNS等による目撃情報等を集計・整理したものです。情報の正確性については細心の注意を払っておりますが、その内容を保証するものではありません。万が一、情報の誤りによって損害が生じた場合でも、制作者は一切の責任を負いかねます。 </p> 
-        <p> アイコン、画像データ等は制作者が作成したものであり、著作権は制作者に帰属します。転載は自由ですが、制作者や引用元を記載していただけるとありがたいです。また、商用目的での利用は固くお断りします。 </p> 
+        <p> 本サイトのデータは、自ら調査した情報のほか、公表されている各種資料、鉄道雑誌、およびSNS等による目撃情報等を集計・整理したものです。情報の正確性については細心の注意を払っておりますが、その内容を保証するものではありません。 </p> 
+        <p> アイコン、画像データ等は制作者が作成したものであり、著作権は制作者に帰属します。転載は自由ですが、制作者や引用元を記載していただけるとありがたいです。 </p> 
         <p> お問い合わせはTwitter(現𝕏)のDMからお願いします。 </p> 
 
         <p> 
@@ -302,16 +269,6 @@
         
         <div id="last-update" style="font-size: 12px; color: #808080; padding: 10px;"></div>
     </div>
-
-    <script>
-        (function() {
-            const lastUpdate = new Date(document.lastModified);
-            const target = document.getElementById('last-update');
-            if (target) {
-                target.innerText = `最終更新: ${lastUpdate.getFullYear()}年${lastUpdate.getMonth() + 1}月${lastUpdate.getDate()}日 ${("0" + lastUpdate.getHours()).slice(-2)}:${("0" + lastUpdate.getMinutes()).slice(-2)}`;
-            }
-        })();
-    </script>
 </div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
@@ -350,7 +307,7 @@ function showFormation() {
 function showAbout() {
     hideAllViews();
     document.getElementById('about-view').classList.remove('hidden');
-    toggleMenu(); // メニューを閉じる
+    toggleMenu();
 }
 
 // データの読み込み
@@ -462,27 +419,27 @@ function showFormationList(sysName) {
     const formKeys = [...new Set(sysData.map(r => `${r.形式}|${r.見出しアイコン || ''}|${r.見出し特記事項 || ''}`))];
 
     formKeys.forEach((key, index) => {
-    const [formName, iconName, note] = key.split('|'); 
-    const formId = `form-${index}-${formName.replace(/\s+/g, '')}`;
-    
-    const formData = sysData.filter(r => 
-        r.形式 === formName && 
-        (r.見出しアイコン || '') === iconName && 
-        (r.見出し特記事項 || '') === note
-    );
-    const first = formData[0];
+        const [formName, iconName, note] = key.split('|');
+        const formId = `form-${index}-${formName.replace(/\s+/g, '')}`;
+        
+        const formData = sysData.filter(r => 
+            r.形式 === formName && 
+            (r.見出しアイコン || '') === iconName && 
+            (r.見出し特記事項 || '') === note
+        );
+        const first = formData[0];
 
-    fContainer.insertAdjacentHTML('beforeend', `
-        <div class="system-section" onclick="toggleSection('${formId}', this)">
-            <div class="system-title">
-                ${iconName ? `<img src="icon/${iconName}.png" class="system-icon">` : ''}
-                <div style="display: flex; flex-direction: column; line-height: 1.2;">
-                    <span>${formName}</span>
-                    ${note ? `<span style="font-size: 0.75rem; font-weight: normal; opacity: 0.8;">${note}</span>` : ''}
+        fContainer.insertAdjacentHTML('beforeend', `
+            <div class="system-section" onclick="toggleSection('${formId}', this)">
+                <div class="system-title">
+                    ${iconName ? `<img src="icon/${iconName}.png" class="system-icon">` : ''}
+                    <div style="display: flex; flex-direction: column; line-height: 1.2;">
+                        <span>${formName}</span>
+                        ${note ? `<span style="font-size: 0.75rem; font-weight: normal; opacity: 0.8;">${note}</span>` : ''}
+                    </div>
                 </div>
+                <div class="arrow">▼</div>
             </div>
-            <div class="arrow">▼</div>
-        </div>
             <div id="${formId}" class="formation-list-bg">
                 <div class="direction-label"><span>◀︎${first.左方向||''}</span><span>${first.右方向||''}▶︎</span></div>
                 <div class="rows-box"></div>
@@ -501,19 +458,20 @@ function showFormationList(sysName) {
 
             const periodLabel = (start || end) ? ` (${start||''}〜${end||''})` : '';
             let h = `<div class="f-name-tag">${name}${periodLabel}</div><div class="car-mini-list">`;
+            
             cars.forEach(c => {
                 const lp = PANTA_MAP[c.左パンタ];
                 const rp = PANTA_MAP[c.右パンタ];
                 const carNoDisplay = c.略号 ? (c.車両番号 ? c.車両番号.split('-').pop() : "") : (c.車両番号 || "");
-                
-                // 背景画像からimgタグに変更し、自動幅調整に対応
+
+                // 車体長可変対応: background-imageではなくimgタグを使用
                 h += `<div class="mini-car-container">
                     ${lp ? `<img src="parts/${lp}.png" class="mini-panta mini-panta-l ${lp === 'p0' ? 'panta-p0' : ''} ${lp.startsWith('py') ? 'low-panta' : ''}">` : ''}
                     ${rp ? `<img src="parts/${rp}.png" class="mini-panta mini-panta-r ${rp === 'p0' ? 'panta-p0' : ''} ${rp.startsWith('py') ? 'low-panta' : ''}">` : ''}
                     <img src="body/${c.車体アイコン}.png" class="mini-car-body">
                     <div class="mini-info-in-body">${c.略号||''}${carNoDisplay}</div>
                     ${c.左台車 ? `<img src="parts/${c.左台車}.png" class="mini-bogie mini-bogie-l">` : ''}
-                    ${c.rightBogie ? `<img src="parts/${c.右台車}.png" class="mini-bogie mini-bogie-r">` : (c.右台車 ? `<img src="parts/${c.右台車}.png" class="mini-bogie mini-bogie-r">` : '')}
+                    ${c.右台車 ? `<img src="parts/${c.右台車}.png" class="mini-bogie mini-bogie-r">` : ''}
                 </div>`;
             });
             row.innerHTML = h + `</div>`;
@@ -538,12 +496,12 @@ function renderDetail(name, start, end, company) {
 
     document.getElementById('detail-header-title').innerText = name;
     const periodRow = document.getElementById('info-period-row');
-if (start || end) {
-    periodRow.classList.remove('hidden');
-    document.getElementById('info-period').innerText = `${start || ''} 〜 ${end || ''}`;
-} else {
-    periodRow.classList.add('hidden');
-}
+    if (start || end) {
+        periodRow.classList.remove('hidden');
+        document.getElementById('info-period').innerText = `${start || ''} 〜 ${end || ''}`;
+    } else {
+        periodRow.classList.add('hidden');
+    }
     document.getElementById('info-type').innerText = `${top.形式} ${top.番台 || ''}`.trim();
     document.getElementById('info-base').innerText = top.所属基地;
 
@@ -557,14 +515,14 @@ if (start || end) {
 
     document.getElementById('info-stamps').innerHTML = getStampsHTML(top["編成情報(選択)"], 'stamp-icon-large');
     let formationDesc = document.getElementById('info-formation-desc');
-if (!formationDesc) {
-    formationDesc = document.createElement('div');
-    formationDesc.id = 'info-formation-desc';
-    formationDesc.style.marginTop = '10px';
-    formationDesc.style.fontSize = '14px';
-    document.getElementById('info-stamps').after(formationDesc);
-}
-formationDesc.innerText = top["編成情報(記述)"] || '';
+    if (!formationDesc) {
+        formationDesc = document.createElement('div');
+        formationDesc.id = 'info-formation-desc';
+        formationDesc.style.marginTop = '10px';
+        formationDesc.style.fontSize = '14px';
+        document.getElementById('info-stamps').after(formationDesc);
+    }
+    formationDesc.innerText = top["編成情報(記述)"] || '';
 
     const cCon = document.getElementById('car-details-container');
     cCon.innerHTML = '<div class="section-title">車両情報</div>';
@@ -575,23 +533,18 @@ formationDesc.innerText = top["編成情報(記述)"] || '';
     currentCars.forEach(c => {
         const carId = c.車両ID;
         carIdsInFormation.push(carId);
-        
         const carMeta = carIdMap[carId] || {};
         const lp = PANTA_MAP[c.左パンタ];
         const rp = PANTA_MAP[c.右パンタ];
 
         if (carMeta.落成日 && carMeta.製造所) {
             historyPool.push({
-                date: carMeta.落成日,
-                stamp: 'rakusei',
-                desc: `${carMeta.製造所}にて落成。`,
-                carId: carId,
-                carNo: c.車両番号
+                date: carMeta.落成日, stamp: 'rakusei', desc: `${carMeta.製造所}にて落成。`, carId: carId, carNo: c.車両番号
             });
         }
 
         cCon.innerHTML += `
-            <div class="car-unit" style="margin-bottom: 25px; padding-bottom: 20px; border-bottom: 0.5px solid #ccc;">
+            <div class="car-unit">
                 <div class="car-visual-row">
                     <div class="car-img-container" onclick="filterHistoryByCar('${carId}', '${c.車両番号}')">
                         ${lp ? `<img src="parts/${lp}.png" class="panta-detail panta-left ${lp === 'p0' ? 'panta-p0' : ''} ${lp.startsWith('py') ? 'low-panta' : ''}">` : ''}
@@ -599,35 +552,29 @@ formationDesc.innerText = top["編成情報(記述)"] || '';
                         <div class="detail-car-body" style="background-image: url('body/${c.車体アイコン}.png');"></div>
                         <div class="car-no-inline">${c.車両番号}</div>
                         ${c.左台車?`<img src="parts/${c.左台車}.png" class="bogie bogie-left">`:''}
-                        ${c.右台車?`<img src="parts/${c.右台車}.png" class="bogie bogie-right">`:''}
+                        ${c.rightBogie?`<img src="parts/${c.rightBogie}.png" class="bogie bogie-right">`:''}
                     </div>
-    <div class="car-meta">
-            <div>${carMeta.製造所 || ''}</div>
-            <div>${formatDateJP(carMeta.落成日)}</div>
-            <div class="stamp-container" style="margin-top: 5px;">
-                ${getStampsHTML(c["車両情報(選択)"], 'stamp-small')}
-            </div>
-        </div>
-    </div>
-    
-    <div class="car-desc">${c["車両情報(記述)"] || ''}</div>
-
-    <div class="car-specs-container">
-        ${[
-            {l:'集電装置', v:c.集電装置},
-            {l:'主電動機', v:c.主電動機},
-            {l:'制御装置', v:c.制御装置},
-            {l:'補助電源', v:c.補助電源装置},
-            {l:'空気圧縮機', v:c.空気圧縮機},
-            {l:'動力台車', v:c.動力台車},
-            {l:'付随台車', v:c.付随台車}
-        ].map(item => item.v ? `
-            <div class="spec-row">
-                <span class="spec-label">${item.l}</span>
-                <span class="spec-value">${item.v}</span>
-            </div>` : '').join('')}
-    </div>
-</div>`;
+                    <div class="car-meta">
+                        <div>${carMeta.製造所 || ''}</div>
+                        <div>${formatDateJP(carMeta.落成日)}</div>
+                        <div class="stamp-container" style="margin-top: 5px;">
+                            ${getStampsHTML(c["車両情報(選択)"], 'stamp-small')}
+                        </div>
+                    </div>
+                </div>
+                <div class="car-desc">${c["車両情報(記述)"] || ''}</div>
+                <div class="car-specs-container">
+                    ${[
+                        {l:'集電装置', v:c.集電装置}, {l:'主電動機', v:c.主電動機}, {l:'制御装置', v:c.制御装置},
+                        {l:'補助電源', v:c.補助電源装置}, {l:'空気圧縮機', v:c.空気圧縮機}, {l:'動力台車', v:c.動力台車},
+                        {l:'付随台車', v:c.付随台車}
+                    ].map(item => item.v ? `
+                        <div class="spec-row">
+                            <span class="spec-label">${item.l}</span>
+                            <span class="spec-value">${item.v}</span>
+                        </div>` : '').join('')}
+                </div>
+            </div>`;
     });
 
     historyData.forEach(ev => {
@@ -639,10 +586,7 @@ formationDesc.innerText = top["編成情報(記述)"] || '';
         });
         if (eventCarIds.length > 0) {
             historyPool.push({
-                date: ev.日付,
-                stamp: ev.スタンプ,
-                desc: ev.記述 || "",
-                carIds: eventCarIds
+                date: ev.日付, stamp: ev.スタンプ, desc: ev.記述 || "", carIds: eventCarIds
             });
         }
     });
@@ -674,9 +618,7 @@ function renderHistoryList(events, title = "車歴", isFiltered = false) {
 
     events.forEach(ev => {
         const targetCarNos = ev.carNos && ev.carNos.length > 0 ? ev.carNos : currentCars.filter(c => ev.carIds.includes(c.車両ID)).map(c => c.車両番号);
-        
         const suffix = (isFiltered || targetCarNos.length === currentCars.length) ? "" : ` (${targetCarNos.join(', ')})`;
-        
         hList.innerHTML += `
             <div class="history-item">
                 <div class="history-top-row">
@@ -699,6 +641,14 @@ function toggleSection(id, el) {
     const isShow = list.classList.toggle('show');
     el.querySelector('.arrow').innerText = isShow ? '▲' : '▼';
 }
+
+(function() {
+    const lastUpdate = new Date(document.lastModified);
+    const target = document.getElementById('last-update');
+    if (target) {
+        target.innerText = `最終更新: ${lastUpdate.getFullYear()}年${lastUpdate.getMonth() + 1}月${lastUpdate.getDate()}日 ${("0" + lastUpdate.getHours()).slice(-2)}:${("0" + lastUpdate.getMinutes()).slice(-2)}`;
+    }
+})();
 </script>
 </body>
 </html>
