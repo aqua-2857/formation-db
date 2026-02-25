@@ -478,6 +478,13 @@ function renderDetail(name, start, end, company) {
     const top = currentCars[0];
 
     document.getElementById('detail-header-title').innerText = name;
+    const periodRow = document.getElementById('info-period-row');
+if (start || end) {
+    periodRow.classList.remove('hidden');
+    document.getElementById('info-period').innerText = `${start || ''} 〜 ${end || ''}`;
+} else {
+    periodRow.classList.add('hidden');
+}
     document.getElementById('info-type').innerText = `${top.形式} ${top.番台 || ''}`.trim();
     document.getElementById('info-base').innerText = top.所属基地;
 
