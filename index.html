@@ -154,7 +154,27 @@
         .bogie { position: absolute; bottom: 4px; width: 40px; z-index: 5; }
         .bogie-left { left: 22px; }
         .bogie-right { right: 22px; }
-        .car-meta { font-size: 12px; color: #333333; font-weight: bold; flex-grow: 1; line-height: 1.4; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        /* 車両アイコン右側のテキストブロック */
+.car-meta {
+    font-size: 12px;
+    color: #333333;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start; /* 上詰めに変更 */
+    gap: 2px; /* 行間を微調整 */
+}
+
+/* スタンプのサイズ微調整（横並びにする場合） */
+.stamp-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+}
+
+/* 記述とスペックの左端を揃える設定（継続） */
+.car-desc, .spec-row {
+    padding-left: 20px; /* ここで赤線の位置を固定 */
+}
         .car-data-row { display: flex; align-items: center; gap: 12px; margin-top: 8px; font-size: 13px; color: #333333; }
         .stamp-small { height: 32px; }
         .history-section { border-top: 1px solid var(--sub-gray); margin-top: 20px; padding: 20px; }
@@ -580,34 +600,33 @@ formationDesc.innerText = top["編成情報(記述)"] || '';
                         ${c.左台車?`<img src="parts/${c.左台車}.png" class="bogie bogie-left">`:''}
                         ${c.右台車?`<img src="parts/${c.右台車}.png" class="bogie bogie-right">`:''}
                     </div>
-                    <div class="car-meta">
-                        <div>${carMeta.製造所 || ''}</div>
-                        <div>${formatDateJP(carMeta.落成日)}</div>
-                    </div>
-                </div>
-                
-  <div class="car-data-row">
-            <div class="stamp-container" style="padding-left: 20px;">${getStampsHTML(c["車両情報(選択)"], 'stamp-small')}</div>
+    <div class="car-meta">
+            <div>${carMeta.製造所 || ''}</div>
+            <div>${formatDateJP(carMeta.落成日)}</div>
+            <div class="stamp-container" style="margin-top: 5px;">
+                ${getStampsHTML(c["車両情報(選択)"], 'stamp-small')}
+            </div>
         </div>
-        
-        <div class="car-desc">${c["車両情報(記述)"] || ''}</div>
+    </div>
+    
+    <div class="car-desc">${c["車両情報(記述)"] || ''}</div>
 
-        <div class="car-specs-container">
-            ${[
-                {l:'集電装置', v:c.集電装置},
-                {l:'主電動機', v:c.主電動機},
-                {l:'制御装置', v:c.制御装置},
-                {l:'補助電源', v:c.補助電源装置},
-                {l:'空気圧縮機', v:c.空気圧縮機},
-                {l:'動力台車', v:c.動力台車},
-                {l:'付随台車', v:c.付随台車}
-            ].map(item => item.v ? `
-                <div class="spec-row">
-                    <span class="spec-label">${item.l}</span>
-                    <span class="spec-value">${item.v}</span>
-                </div>` : '').join('')}
-        </div>
-    </div>`;
+    <div class="car-specs-container">
+        ${[
+            {l:'集電装置', v:c.集電装置},
+            {l:'主電動機', v:c.主電動機},
+            {l:'制御装置', v:c.制御装置},
+            {l:'補助電源', v:c.補助電源装置},
+            {l:'空気圧縮機', v:c.空気圧縮機},
+            {l:'動力台車', v:c.動力台車},
+            {l:'付随台車', v:c.付随台車}
+        ].map(item => item.v ? `
+            <div class="spec-row">
+                <span class="spec-label">${item.l}</span>
+                <span class="spec-value">${item.v}</span>
+            </div>` : '').join('')}
+    </div>
+</div>`;
     });
 
     historyData.forEach(ev => {
