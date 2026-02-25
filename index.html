@@ -497,6 +497,15 @@ if (start || end) {
     }
 
     document.getElementById('info-stamps').innerHTML = getStampsHTML(top["編成情報(選択)"], 'stamp-icon-large');
+    let formationDesc = document.getElementById('info-formation-desc');
+if (!formationDesc) {
+    formationDesc = document.createElement('div');
+    formationDesc.id = 'info-formation-desc';
+    formationDesc.style.marginTop = '10px';
+    formationDesc.style.fontSize = '14px';
+    document.getElementById('info-stamps').after(formationDesc);
+}
+formationDesc.innerText = top["編成情報(記述)"] || '';
 
     const cCon = document.getElementById('car-details-container');
     cCon.innerHTML = '<div class="section-title">車両情報</div>';
