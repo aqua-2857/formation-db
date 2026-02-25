@@ -131,14 +131,22 @@
         .mini-bogie-l { left: 11.7%; }
         .mini-bogie-r { right: 11.7%; }
         .mini-car-body { width: 100%; height: 58.3%; position: absolute; bottom: 20.8%; z-index: 10; background-size: contain; background-repeat: no-repeat; background-position: bottom; }
-        .mini-info-in-body { position: absolute; bottom: calc(37.5% - 2px); width: 100%; text-align: center; z-index: 20; color: white; font-weight: bold; font-size: min(8px, 1.8vw); text-shadow: 1px 1px 1px rgba(0,0,0,0.8); white-space: nowrap; pointer-events: none; }
-        .section-title { font-size: 16px; font-weight: bold; margin-bottom: 12px; color: var(--text-main); }
+        .mini-info-in-body { position: absolute; bottom: calc(37.5% - 2px); width: 100%; text-align: center; z-index: 20; color: white; font-weight: bold; font-size: min(8px, 1.8vw); text-shadow: 1px 1px 1px rgba(0,0,0,0.8); white-space: nowrap; pointer-events: /* 135行目付近 */
+.section-title {
+    font-size: 16px;
+    font-weight: bold;
+    margin: 20px 0 10px 0; /* 上下の外余白を調整 */
+    padding: 0 20px;       /* ★ここを追加！左右に20pxの余白を作る */
+}
         .detail-info-box { padding: 20px; color: var(--text-main); line-height: 1.6; font-size: 14px; }
         .info-row { display: flex; margin-bottom: 5px; }
         .info-label { width: 100px; color: var(--sub-gray); flex-shrink: 0; }
         .stamp-icon-large { height: 32px; }
         .divider { height: 1px; background-color: var(--sub-gray); margin: 10px 20px; }
-        .car-detail-list { padding: 0 10px; }
+
+.car-detail-list {
+    padding: 0; /* ★ここを0にすると、見出しの20pxと揃いやすくなります */
+}
         .car-unit { display: flex; flex-direction: column; margin-bottom: 45px; }
         .car-visual-row { display: flex; align-items: center; gap: 8px; }
         .car-img-container { position: relative; width: 160px; height: 80px; flex-shrink: 0; cursor: pointer; }
@@ -575,7 +583,7 @@ if (!formationDesc) {
 formationDesc.innerText = top["編成情報(記述)"] || '';
 
     const cCon = document.getElementById('car-details-container');
-    cCon.innerHTML = '<div class="section-title">車両情報</div>';
+   cCon.innerHTML = '<div class="section-title">車両情報</div>';
     
     const carIdsInFormation = []; 
     const historyPool = [];
