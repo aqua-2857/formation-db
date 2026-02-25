@@ -185,34 +185,22 @@
         .history-desc { font-size: 13px; color: #333; }
 
         .hidden { display: none !important; }
-/* 車両ユニット全体の余白をリセット */
+/* 車両情報のレイアウト微調整 */
 .car-unit {
-    margin-bottom: 20px;
-    padding: 0 0 20px 0; /* 左右パディングを0にして、中身で位置を制御 */
-    border-bottom: 0.5px solid #ddd;
+    margin-bottom: 30px;
+    padding-bottom: 20px;
+    border-bottom: 1px solid #ddd;
 }
 
-/* 最後の車両の下線を消して、車歴との二重線を防ぐ */
-.car-unit:last-of-type {
-    border-bottom: none !important;
+.car-desc, .car-specs-container {
+    padding: 0 15px; /* 左右に適切な余白を */
+    margin-top: 10px;
 }
 
-/* 車両情報の記述とスペック行の左端を「20px」で統一 */
-.car-desc, 
 .spec-row {
-    padding-left: 20px; /* ここを編成情報のラベルの余白と合わせる */
-}
-
-.car-desc {
-    margin-top: 8px;
-    margin-bottom: 10px;
+    display: grid;
+    grid-template-columns: 90px 1fr; /* ラベル幅を固定して綺麗に並べる */
     font-size: 13px;
-}
-
-/* スペック行のレイアウト */
-.spec-row {
-    display: flex;
-    font-size: 12px;
     margin-bottom: 4px;
 }
 
