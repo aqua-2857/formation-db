@@ -452,7 +452,13 @@ function showFormationList(sysName) {
 
         namesWithPeriod.forEach(keyStr => {
             const [name, start, end, company] = keyStr.split('|');
-            const cars = formData.filter(r => r.編成名 === name && (r.始 || '') === start && (r.終 || '') === end && r.会社名 === company).sort((a,b) => a.号車 - b.号車);
+            const cars = formData.filter(r => 
+                r.編成名 === name && 
+                (r.始 || '') === start && 
+                (r.終 || '') === end && 
+                r.会社名 === company &&
+                (r.見出し特記事項 || '') === note
+                ).sort((a,b) => a.号車 - b.号車);
             
             const row = document.createElement('div');
             row.className = 'formation-row';
@@ -493,7 +499,8 @@ function renderDetail(name, start, end, company) {
         (r.始 || '') === start && 
         (r.終 || '') === end && 
         r.路線系統 === currentSystem && 
-        r.会社名 === company
+        r.会社名 === company &&
+        (r.見出し特記事項 || '') === (note || '')
     ).sort((a,b) => a.号車 - b.号車);
     const top = currentCars[0];
 
