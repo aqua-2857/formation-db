@@ -132,6 +132,9 @@
         .mini-panta.panta-p0 { width: 12px; bottom: 23px; }
         .mini-panta-l.panta-p0 { left: 3px; }
         .mini-panta-r.panta-p0 { right: 3px; }
+        .mini-panta.panta-px { width: 8px; bottom: 23px; }
+        .mini-panta-l.panta-px { left: 8px; }
+        .mini-panta-r.panta-px { right: 8px; }
         .mini-panta.low-panta { bottom: 23px; } 
         
         .mini-bogie { position: absolute; height: 4px; z-index: 5; bottom: 18%; }
@@ -159,6 +162,9 @@
         .panta-detail.panta-p0 { width: 44px; bottom: 61px; }
         .panta-left.panta-p0 { left: 11px; }
         .panta-right.panta-p0 { right: 11px; }
+        .panta-detail.panta-px { width: 22px; bottom: 61px; }
+        .panta-left.panta-px { left: 22px; }
+        .panta-right.panta-px { right: 22px; }
         .panta-detail.low-panta { bottom: 61px; } 
         .bogie { position: absolute; bottom: 5px; height: 15px; z-index: 5; }
         .bogie-left { left: 5%; }
@@ -281,7 +287,7 @@ let historyData = [];
 let currentSystem = "";
 let currentCars = [];
 let fullHistoryEvents = []; 
-const PANTA_MAP = { '◇': 'p0', '＜': 'p1', '＞': 'p2', '<': 'py1', '>': 'py2' };
+const PANTA_MAP = { '◇': 'p0', '＜': 'p1', '＞': 'p2', '<': 'py1', '>': 'py2', 'x': 'px' };
 
 // メニュー・表示切替
 function toggleMenu() {
