@@ -610,7 +610,11 @@ function renderDetail(name, start, end, company, note) {
         }
     });
 
-    historyPool.sort((a, b) => (a.date || "").replace(/\//g,'').localeCompare((b.date || "").replace(/\//g,'')));
+    historyPool.sort((a, b) => {
+        const dateA = new Date(a.date);
+        const dateB = new Date(b.date);
+        return dateA - dateB;
+    });
     
     fullHistoryEvents = [];
     historyPool.forEach(item => {
