@@ -610,14 +610,22 @@ function renderDetail(name, start, end, company, note) {
         }
     });
 
-    historyPool.sort((a, b) => {
-        const dateA = new Date(a.date);
-        const dateB = new Date(b.date);
-        return dateA - dateB;
+    const indexedPool = historyPool.map((item, index) => ({ ...item, originalIndex: index }));
+    indexedPool.sort((a, b) => {
+        const normalize = (d) => {
+            if (!d) return "";
+            return d.split('-')[0].split('/').map(s => s.padStart(2, '0')).join('');
+        };
+        const dA = normalize(a.date);
+        const dB = normalize(b.date);
+        if (dA.substring(0, 6) === dB.substring(0, 6) && (dA === dB || dA.includes('?') || dB.includes('?'))) {
+            return a.originalIndex - b.originalIndex;
+        }
+        return dA.localeCompare(dB);
     });
     
     fullHistoryEvents = [];
-    historyPool.forEach(item => {
+    indexedPool.forEach(item => {
         const prev = fullHistoryEvents[fullHistoryEvents.length - 1];
         if (prev && prev.date === item.date && prev.desc === item.desc && prev.stamp === item.stamp) {
             if (item.carNo) prev.carNos.push(item.carNo);
